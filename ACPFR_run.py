@@ -74,20 +74,6 @@ for i,j in instance.RAM:
          instance.Sbase*(instance.branch_Qpara[i,j].value),
          ((instance.Sbase*(instance.branch_Pde[i,j].value+instance.branch_Ppara[i,j].value))**2)**0.5,
          ((instance.Sbase*(instance.branch_Qde[i,j].value+instance.branch_Qpara[i,j].value))**2)**0.5))
-#for k in instance.BAR:
-#    for l in instance.BAR:
-#        for i,j in instance.RAM:
-#            if k == i:
-#                if l == j:
-#                    print('%5d %5d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f'
-#                          %(i,j,
-#                            instance.Sbase*(instance.branch_P[i,j].value+instance.r[i,j]*instance.branch_Iij_sqr[i,j].value),
-#                            -instance.Sbase*instance.branch_P[i,j].value,
-#                            instance.Sbase*(instance.branch_Q[i,j].value+instance.x[i,j]*instance.branch_Iij_sqr[i,j].value-instance.bsh_half[i,j]*instance.bus_voltage_sqr[i].value),
-#                            -instance.Sbase*(instance.branch_Q[i,j].value+instance.bsh_half[i,j]*instance.bus_voltage_sqr[j].value),
-#                            instance.Sbase*instance.r[i,j]*instance.branch_Iij_sqr[i,j].value,
-#                            instance.Sbase*(instance.x[i,j]*instance.branch_Iij_sqr[i,j].value-instance.bsh_half[i,j]*instance.bus_voltage_sqr[i].value-instance.bsh_half[i,j]*instance.bus_voltage_sqr[j].value)))
-#
 
 
 
