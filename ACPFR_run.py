@@ -10,11 +10,13 @@ Created on Thu Jan  4 17:34:21 2018
 from pyomo.environ import SolverFactory
 import pyomo.environ as pe
 from ACPFR import model
+# include sistema14nos.dat
+# load "sistema14nos"
 #from pyomo.core import Param
 # ... more constraints
 model.pprint()
 
-instance = model.create('sistema14nos.dat')
+instance = model.create_instance('sistema14nos.dat')
 instance.pprint()
 
 opt= SolverFactory('ipopt')
@@ -30,7 +32,7 @@ print("\nBUS RESULTS\n")
 print("------------------------------------------------------------------------------------------------------------")
 print("   Bus      V[pu]  Theta[Degree]     Pg[MW]     Qg[MVAr]       Pd[MW]     Qd[MVAr]      Gsh[MW]    Bsh[MVAr]\n")
 #for i in range(len(model.bus_angle)): print("Bus_Angle "+str(i)+":" + str(model.bus_angle[i].value*180/3.14159265359))
-for i in instance.BAR: 
+for i in instance.BAR:
 #    print('%5d  %10.4f %12.4f %12.4f %12.4f '%(i,(instance.bus_voltage_sqr[i].value)**0.5,instance.bus_angle[i].value*180/3.14159265359,100*instance.bus_Pg[i].value,100*instance.bus_Qg[i].value))
     a = (instance.bus_e[i].value**2 + instance.bus_f[i].value**2)
     b = 180/3.14159265359*pe.atan((instance.bus_f[i].value)/instance.bus_e[i].value)
@@ -57,7 +59,7 @@ for i in instance.BAR:
     e = e + instance.gshb[i]*a1
     f = f + instance.bshb[i]*a1
 print('TOTAL %37.4f %12.4f %12.4f %12.4f %12.4f %12.4f\n'
-      %(instance.Sbase*a,instance.Sbase*b,c,d,instance.Sbase*e,instance.Sbase*f))    
+      %(instance.Sbase*a,instance.Sbase*b,c,d,instance.Sbase*e,instance.Sbase*f))
 #
 print("------------------------------------------------------------------------------------------------------------")
 print("\nBRANCH RESULTS\n")
@@ -85,7 +87,7 @@ for i,j in instance.RAM:
 #                            -instance.Sbase*(instance.branch_Q[i,j].value+instance.bsh_half[i,j]*instance.bus_voltage_sqr[j].value),
 #                            instance.Sbase*instance.r[i,j]*instance.branch_Iij_sqr[i,j].value,
 #                            instance.Sbase*(instance.x[i,j]*instance.branch_Iij_sqr[i,j].value-instance.bsh_half[i,j]*instance.bus_voltage_sqr[i].value-instance.bsh_half[i,j]*instance.bus_voltage_sqr[j].value)))
-#	
+#
 
 
 
@@ -95,4 +97,4 @@ for i,j in instance.RAM:
     a = a + instance.branch_Ppara[i,j].value+instance.branch_Pde[i,j].value
     b = b + instance.branch_Qpara[i,j].value+instance.branch_Qde[i,j].value
 print('TOTAL %85.4f %15.4f\n'
-      %(instance.Sbase*a,instance.Sbase*b))   
+      %(instance.Sbase*a,instance.Sbase*b))
