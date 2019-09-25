@@ -230,7 +230,7 @@ model.B_q_balance_constr = pe.Constraint(model.BAR, rule=B_q_balance_rule)
 # Pde Constraint
 def C_Pde_rule(model, i, j):
     return (model.branch_Pde[i, j] == model.a_init[i, j] ** 2 * model.g[i, j] * (
-                model.bus_e[i] ** 2 + model.bus_f[i] ** 2) - \
+            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) - \
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) + \
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]))
 
@@ -251,7 +251,7 @@ model.D_Ppara_rule = pe.Constraint(model.RAM, rule=D_Ppara_rule)
 # Qpara Constraint
 def E_Qde_rule(model, i, j):
     return (model.branch_Qde[i, j] == -model.a_init[i, j] ** 2 * (model.b[i, j] + model.bsh_half[i, j]) * (
-                model.bus_e[i] ** 2 + model.bus_f[i] ** 2) + \
+            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) + \
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) + \
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
 
@@ -262,7 +262,7 @@ model.E_Qde_rule = pe.Constraint(model.RAM, rule=E_Qde_rule)
 # Qde Constraint
 def F_Qpara_rule(model, i, j):
     return (model.branch_Qpara[i, j] == -(model.b[i, j] + model.bsh_half[i, j]) * (
-                model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - \
+            model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - \
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) + \
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
 
@@ -349,13 +349,13 @@ for i in instance.BAR:
     d = d + instance.Qd[i]
     e = e + instance.gshb[i] * a1
     f = f + instance.bshb[i] * a1
-print('TOTAL %37.4f %12.4f %12.4f %12.4f %12.4f %12.4f\n'
+print('TOTAL %37.4f %12.4f %12.4f %12.4f %12.4f %12.4f'
       % (instance.Sbase * a, instance.Sbase * b, c, d, instance.Sbase * e, instance.Sbase * f))
 #
 print("------------------------------------------------------------------------------------------------------------")
-print("\nBRANCH RESULTS\n")
+print("BRANCH RESULTS")
 print("------------------------------------------------------------------------------------------------------------")
-print("    i     j        Pij[MW]         Pji[MW]       Qij[MVAr]       Qji[MVAr]         Pls[MW]       Qls[MVAr]\n")
+print("    i     j        Pij[MW]         Pji[MW]       Qij[MVAr]       Qji[MVAr]         Pls[MW]       Qls[MVAr]")
 for i, j in instance.RAM:
     print('%5d %5d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f'
           % (i, j,
@@ -371,5 +371,7 @@ b = 0
 for i, j in instance.RAM:
     a = a + instance.branch_Ppara[i, j].value + instance.branch_Pde[i, j].value
     b = b + instance.branch_Qpara[i, j].value + instance.branch_Qde[i, j].value
-print('TOTAL %85.4f %15.4f\n'
+print("------------------------------------------------------------------------------------------------------------")
+print('TOTAL %85.4f %15.4f'
       % (instance.Sbase * a, instance.Sbase * b))
+print("------------------------------------------------------------------------------------------------------------")
