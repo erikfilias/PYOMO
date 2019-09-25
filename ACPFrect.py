@@ -251,8 +251,8 @@ model.D_Ppara_rule = pe.Constraint(model.RAM, rule=D_Ppara_rule)
 # Qpara Constraint
 def E_Qde_rule(model, i, j):
     return (model.branch_Qde[i, j] == -model.a_init[i, j] ** 2 * (model.b[i, j] + model.bsh_half[i, j]) * (
-            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) + \
-            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) + \
+            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) +
+            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
 
 
@@ -309,7 +309,7 @@ model.H_angle_rule = pe.Constraint(model.BAR, rule=H_angle_rule)
 # model.pprint()
 
 instance = model.create_instance('sistema14nos.dat')
-instance.pprint()
+# instance.pprint()
 
 opt = SolverFactory('ipopt')
 
