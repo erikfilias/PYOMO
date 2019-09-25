@@ -320,12 +320,11 @@ results.write()
 print("------------------------------------------------------------------------------------------------------------")
 print("-------------------------------SUMMARY----------------------------------------------------------------------")
 print("------------------------------------------------------------------------------------------------------------")
-print("\nBUS RESULTS\n")
+print("BUS RESULTS")
 print("------------------------------------------------------------------------------------------------------------")
-print("   Bus      V[pu]  Theta[Degree]     Pg[MW]     Qg[MVAr]       Pd[MW]     Qd[MVAr]      Gsh[MW]    Bsh[MVAr]\n")
+print("   Bus      V[pu]  Theta[Degree]     Pg[MW]     Qg[MVAr]       Pd[MW]     Qd[MVAr]      Gsh[MW]    Bsh[MVAr]")
 # for i in range(len(model.bus_angle)): print("Bus_Angle "+str(i)+":" + str(model.bus_angle[i].value*180/3.14159265359))
 for i in instance.BAR:
-    #    print('%5d  %10.4f %12.4f %12.4f %12.4f '%(i,(instance.bus_voltage_sqr[i].value)**0.5,instance.bus_angle[i].value*180/3.14159265359,100*instance.bus_Pg[i].value,100*instance.bus_Qg[i].value))
     a = (instance.bus_e[i].value ** 2 + instance.bus_f[i].value ** 2)
     b = 180 / 3.14159265359 * pe.atan((instance.bus_f[i].value) / instance.bus_e[i].value)
     print('%5d  %10.4f %12.4f %12.4f %12.4f %12.4f %12.4f %12.4f %12.4f'
@@ -349,6 +348,8 @@ for i in instance.BAR:
     d = d + instance.Qd[i]
     e = e + instance.gshb[i] * a1
     f = f + instance.bshb[i] * a1
+print(
+        "------------------------------------------------------------------------------------------------------------")
 print('TOTAL %37.4f %12.4f %12.4f %12.4f %12.4f %12.4f'
       % (instance.Sbase * a, instance.Sbase * b, c, d, instance.Sbase * e, instance.Sbase * f))
 #
