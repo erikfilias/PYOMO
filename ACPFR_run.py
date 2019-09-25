@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan  4 17:34:21 2018
-
-@author: Erik
-"""
-
 #from pyomo.environ import *
 #from pyomo.opt import SolverFactory
 from pyomo.environ import SolverFactory
 import pyomo.environ as pe
-from ACPFR import model
+# import ACPFR
+# from PYOMO import ACPFR
+
+# include ACPFR
+
 # include sistema14nos.dat
 # load "sistema14nos"
 #from pyomo.core import Param
