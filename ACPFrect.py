@@ -191,9 +191,9 @@ model.bus_Qg = pe.Var(model.BAR, initialize=Qg_init)
 ###########################################################################################
 # OBJECTIVE
 def TotalLoss(model):
-    return sum(model.g[i, j] * (model.a_init[i, j] ** 2 * (model.bus_e[i] ** 2 + model.bus_f[i] ** 2) + \
-                                (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - 2 * model.a_init[i, j] * \
-                                (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j])) \
+    return sum(model.g[i, j] * (model.a_init[i, j] ** 2 * (model.bus_e[i] ** 2 + model.bus_f[i] ** 2) +
+                                (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - 2 * model.a_init[i, j] *
+                                (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
                for i, j in model.RAM)
 
 
@@ -230,8 +230,8 @@ model.B_q_balance_constr = pe.Constraint(model.BAR, rule=B_q_balance_rule)
 # Pde Constraint
 def C_Pde_rule(model, i, j):
     return (model.branch_Pde[i, j] == model.a_init[i, j] ** 2 * model.g[i, j] * (
-            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) - \
-            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) + \
+            model.bus_e[i] ** 2 + model.bus_f[i] ** 2) -
+            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]))
 
 
@@ -240,8 +240,8 @@ model.C_Pde_rule = pe.Constraint(model.RAM, rule=C_Pde_rule)
 
 # Ppara Constraint
 def D_Ppara_rule(model, i, j):
-    return (model.branch_Ppara[i, j] == model.g[i, j] * (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - \
-            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) - \
+    return (model.branch_Ppara[i, j] == model.g[i, j] * (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) -
+            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) -
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]))
 
 
@@ -262,8 +262,8 @@ model.E_Qde_rule = pe.Constraint(model.RAM, rule=E_Qde_rule)
 # Qde Constraint
 def F_Qpara_rule(model, i, j):
     return (model.branch_Qpara[i, j] == -(model.b[i, j] + model.bsh_half[i, j]) * (
-            model.bus_e[j] ** 2 + model.bus_f[j] ** 2) - \
-            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) + \
+            model.bus_e[j] ** 2 + model.bus_f[j] ** 2) -
+            model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
 
 
@@ -349,7 +349,7 @@ for i in instance.BAR:
     e = e + instance.gshb[i] * a1
     f = f + instance.bshb[i] * a1
 print(
-        "------------------------------------------------------------------------------------------------------------")
+    "------------------------------------------------------------------------------------------------------------")
 print('TOTAL %37.4f %12.4f %12.4f %12.4f %12.4f %12.4f'
       % (instance.Sbase * a, instance.Sbase * b, c, d, instance.Sbase * e, instance.Sbase * f))
 #
