@@ -145,8 +145,8 @@ model.Qg0_pu = pe.Param(model.BAR, initialize=Qg0_init)
 
 
 def e_init(model, i):
-    a2 = model.Vnom
-    return a2
+    a = model.Vnom
+    return a
 
 
 model.bus_e = pe.Var(model.BAR, initialize=e_init)
@@ -189,7 +189,10 @@ model.bus_Qg = pe.Var(model.BAR, initialize=Qg_init)
 def TotalLoss(model):
     return sum(model.g[i, j] * (model.a_init[i, j] ** 2 * (model.bus_e[i] ** 2 + model.bus_f[i] ** 2) +
                                 (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) -
-                                2 * model.a_init[i, j]*(model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j])) for i, j in model.RAM)
+                                2 * model.a_init[i, j] * (
+                                            model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j])) for i, j
+               in model.RAM)
+
 
 model.Loss = pe.Objective(rule=TotalLoss)
 
@@ -197,20 +200,22 @@ model.Loss = pe.Objective(rule=TotalLoss)
 ##CONSTRAINTS
 # Active Power Balance
 def A_p_balance_rule(model, k):
-    return model.bus_Pg[k] - model.Pd_pu[k] - \
-           sum(model.branch_Ppara[j, i] for j, i in model.RAM if k == i) - \
-           sum(model.branch_Pde[i, j] for i, j in model.RAM if k == i) + \
-           (model.bus_e[k] ** 2 + model.bus_f[k] ** 2) * model.gshb[k] == 0
+    return (model.bus_Pg[k] - model.Pd_pu[k] -
+            sum(model.branch_Ppara[j, i] for j, i in model.RAM if k == i) -
+            sum(model.branch_Pde[i, j] for i, j in model.RAM if k == i) +
+            (model.bus_e[k] ** 2 + model.bus_f[k] ** 2) * model.gshb[k] == 0)
+
 
 model.A_p_balance_rule = pe.Constraint(model.BAR, rule=A_p_balance_rule)
 
 
 # Reactive Power Balance
 def B_q_balance_rule(model, k):
-    return model.bus_Qg[k] - model.Qd_pu[k] - \
-           sum(model.branch_Qpara[j, i] for j, i in model.RAM if k == i) - \
-           sum(model.branch_Qde[i, j] for i, j in model.RAM if k == i) + \
-           (model.bus_e[k] ** 2 + model.bus_f[k] ** 2) * model.bshb[k] == 0
+    return (model.bus_Qg[k] - model.Qd_pu[k] -
+            sum(model.branch_Qpara[j, i] for j, i in model.RAM if k == i) -
+            sum(model.branch_Qde[i, j] for i, j in model.RAM if k == i) +
+            (model.bus_e[k] ** 2 + model.bus_f[k] ** 2) * model.bshb[k] == 0)
+
 
 model.B_q_balance_constr = pe.Constraint(model.BAR, rule=B_q_balance_rule)
 
@@ -222,6 +227,7 @@ def C_Pde_rule(model, i, j):
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]))
 
+
 model.C_Pde_rule = pe.Constraint(model.RAM, rule=C_Pde_rule)
 
 
@@ -232,15 +238,18 @@ def D_Ppara_rule(model, i, j):
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]) -
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]))
 
+
 model.D_Ppara_rule = pe.Constraint(model.RAM, rule=D_Ppara_rule)
 
 
 # Qpara Constraint
 def E_Qde_rule(model, i, j):
     return (model.branch_Qde[i, j] ==
-            -model.a_init[i, j] ** 2 * (model.b[i, j] + model.bsh_half[i, j]) * (model.bus_e[i] ** 2 + model.bus_f[i] ** 2) +
+            -model.a_init[i, j] ** 2 * (model.b[i, j] + model.bsh_half[i, j]) * (
+                        model.bus_e[i] ** 2 + model.bus_f[i] ** 2) +
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
+
 
 model.E_Qde_rule = pe.Constraint(model.RAM, rule=E_Qde_rule)
 
@@ -251,6 +260,7 @@ def F_Qpara_rule(model, i, j):
             -(model.b[i, j] + model.bsh_half[i, j]) * (model.bus_e[j] ** 2 + model.bus_f[j] ** 2) -
             model.a_init[i, j] * model.g[i, j] * (model.bus_e[i] * model.bus_f[j] - model.bus_e[j] * model.bus_f[i]) +
             model.a_init[i, j] * model.b[i, j] * (model.bus_e[i] * model.bus_e[j] + model.bus_f[i] * model.bus_f[j]))
+
 
 model.F_Qpara_rule = pe.Constraint(model.RAM, rule=F_Qpara_rule)
 
@@ -263,6 +273,7 @@ def G_Vg_rule(model, i):
     else:
         return pe.Constraint.Skip
 
+
 model.G_Vg_rule = pe.Constraint(model.BAR, rule=G_Vg_rule)
 
 
@@ -273,6 +284,7 @@ def H_angle_rule(model, i):
         return (model.bus_f[i] == model.bus_e[i] * pe.tan(model.th0[i] * 3.14159265359 / 180))
     else:
         return pe.Constraint.Skip
+
 
 model.H_angle_rule = pe.Constraint(model.BAR, rule=H_angle_rule)
 
