@@ -1,0 +1,32 @@
+# DATA
+
+param : I : d :=
+X  400
+Y  400
+;
+
+set J := 1 2;
+
+param : K : s  m :=
+A  4000  1
+B  5000  1
+C  4500  1
+;
+
+param cx :
+   A  B  C :=
+1  3  4  5
+2  4  5  3
+;
+
+param cy :
+   A  B  C :=
+1  4  4  4
+2  4  4  4
+;
+
+param p :
+   1  2 :=
+X 18 16
+Y 15  0
+;
