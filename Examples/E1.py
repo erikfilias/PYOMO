@@ -1,6 +1,8 @@
 from pyomo.environ import SolverFactory
 import pyomo.environ as pe
+import time
 
+StartTime   = time.time()
 model = pe.AbstractModel()
 
 model.I = pe.Set()
@@ -40,12 +42,21 @@ model.AxbConstraintB = pe.Constraint(model.I, rule=ax_constraint_ruleB)
 
 model.pprint()
 
+ModelingTime = time.time() - StartTime
+StartTime   = time.time()
+
 instance = model.create_instance('E1.dat')  # To choose instance
 instance.pprint()
+
+ReadingTime = time.time() - StartTime
+StartTime   = time.time()
 
 opt = SolverFactory('gurobi')
 
 results = opt.solve(instance)
+
+SolvingTime = time.time() - StartTime
+StartTime   = time.time()
 
 results.write()
 
@@ -58,6 +69,14 @@ for v in instance.component_objects(pe.Var, active=True):
         print("   ", index, varobject[index].value)
 
 print("Profit = ", sum(instance.p[i]*instance.x[i, j].value for i in instance.I for j in instance.J) - sum(instance.c[i, j]*instance.x[i, j].value for i in instance.I for j in instance.J))
+
+WritingTime = time.time() - StartTime
+StartTime   = time.time()
+
+print('Modeling               time', ModelingTime       )
+print('Reading DATA           time', ReadingTime  )
+print('Solving                time', SolvingTime )
+print('Writing                time', WritingTime )
 
 # print("Profit = ", instance.bus_e[i].value)
 # print("Profit = ", instance.x.value)
