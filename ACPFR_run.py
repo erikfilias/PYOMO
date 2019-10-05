@@ -4,16 +4,29 @@ Created on Wed Dec 27 22:23:41 2017
 """
 from pyomo.environ import SolverFactory
 import pyomo.environ as pe
+import time
 from ACPFR import *
 
+StartTime   = time.time()
 model.pprint()
 
+<<<<<<< HEAD
+=======
+ModelingTime = time.time() - StartTime
+StartTime   = time.time()
+
+>>>>>>> d6dfc7bb0d9404323876f5f593cf8ad2dc11cfab
 instance = model.create_instance('sistema118nos.dat')  #To choose instance
 instance.pprint()
 
-opt= SolverFactory('ipopt')
+ReadingTime = time.time() - StartTime
+StartTime   = time.time()
 
+opt= SolverFactory('ipopt')
 results = opt.solve(instance)
+
+SolvingTime = time.time() - StartTime
+StartTime   = time.time()
 
 results.write()
 
@@ -77,3 +90,11 @@ print("-------------------------------------------------------------------------
 print('TOTAL %85.4f %15.4f'
       % (instance.Sbase * a, instance.Sbase * b))
 print("------------------------------------------------------------------------------------------------------------")
+
+WritingTime = time.time() - StartTime
+StartTime   = time.time()
+
+print('Modeling               time', ModelingTime       )
+print('Reading DATA           time', ReadingTime  )
+print('Solving                time', SolvingTime )
+print('Writing                time', WritingTime )
