@@ -8,7 +8,7 @@ from ACPFR import *
 
 model.pprint()
 
-instance = model.create_instance('sistema14nos.dat')  #To choose instance
+instance = model.create_instance('sistema118nos.dat')  #To choose instance
 instance.pprint()
 
 opt= SolverFactory('ipopt')
