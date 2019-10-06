@@ -10,13 +10,10 @@ from ACPFR import *
 StartTime   = time.time()
 model.pprint()
 
-<<<<<<< HEAD
-=======
 ModelingTime = time.time() - StartTime
 StartTime   = time.time()
 
->>>>>>> d6dfc7bb0d9404323876f5f593cf8ad2dc11cfab
-instance = model.create_instance('sistema118nos.dat')  #To choose instance
+instance = model.create_instance('sistema14nos.dat')  #To choose instance
 instance.pprint()
 
 ReadingTime = time.time() - StartTime
