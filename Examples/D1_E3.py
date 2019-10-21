@@ -46,7 +46,7 @@ model.AxbConstraintB = pe.Constraint(model.I, rule=ax_constraint_ruleB)
 
 model.pprint()
 
-instance = model.create_instance('E3.dat')  # To choose instance
+instance = model.create_instance('D1_E3.dat')  # To choose instance
 instance.pprint()
 
 opt = SolverFactory('gurobi')

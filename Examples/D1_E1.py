@@ -1,9 +1,11 @@
+from pyomo.dataportal import DataPortal
 from pyomo.environ import SolverFactory
 import pyomo.environ as pe
 import time
 
 StartTime   = time.time()
 model = pe.AbstractModel()
+data = DataPortal()
 
 model.I = pe.Set()
 model.J = pe.Set()
@@ -45,7 +47,8 @@ model.pprint()
 ModelingTime = time.time() - StartTime
 StartTime   = time.time()
 
-instance = model.create_instance('E1.dat')  # To choose instance
+
+instance = model.create_instance('D1_E1.dat')  # To choose instance
 instance.pprint()
 
 ReadingTime = time.time() - StartTime
@@ -60,8 +63,6 @@ StartTime   = time.time()
 
 results.write()
 
-# instance.obj_expression.pprint()
-# instance.x.pprint()
 for v in instance.component_objects(pe.Var, active=True):
     print("Variable", v)
     varobject = getattr(instance, str(v))
@@ -77,10 +78,4 @@ print('Modeling               time', ModelingTime       )
 print('Reading DATA           time', ReadingTime  )
 print('Solving                time', SolvingTime )
 print('Writing                time', WritingTime )
-
-# print("Profit = ", instance.bus_e[i].value)
-# print("Profit = ", instance.x.value)
-
-# for j in instance.J:
-#     print("x[", j, "] = ", '%10.4f' % (instance.x[j].value))
 
