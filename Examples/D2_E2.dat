@@ -1,0 +1,14 @@
+# DATA
+
+
+param : N:   f s n c:=
+#
+   Amy      3   5   1   46000
+   Bill     1   2   5   43000
+   Carl     3   4   2   47000
+   Dan      4   3   1   36000
+   Eva      4   2   2   43000
+   Fred     1   3   4   55000
+   Greg     3   1   5   68000
+   Henry    5   4   2   64000
+   Ida      3   3   3   60000;
