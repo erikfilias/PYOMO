@@ -95,13 +95,7 @@ import builtins
 
 builtins.StartTime = time.time()
 
-builtins.CaseName                    = 'sSEP'                               # To select the case
-builtins.Vnom                        = 1.00                                 # Nominal voltage magnitude
-builtins.Vmin                        = 0.95                                 # Minimum voltage magnitude
-builtins.Vmax                        = 1.05                                 # Maximum voltage magnitude
-builtins.PowerFactorInductiveGen     = 0.99                                 # Inductive power factor for power generation
-builtins.PowerFactorCapacitiveGen    = 0.95                                 # Capacitive power factor for power generation
-builtins.PowerFactorDemand           = 0.90                                 # Uniformed power factor for demand
+builtins.CaseName = 'sSEP'                              # To select the case
 
 #%% model declaration
 builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.6.30 - May 8, 2020')
@@ -112,7 +106,7 @@ import openTEPES_InputData as oT_ID
 #%% Model Formulation
 builtins.StartTime = time.time()
 
-import openTEPES_ModelFormulation_DCLoadFlow as oT_MF
+import openTEPES_ModelFormulation as oT_MF
 
 #%% Writting LP File
 # mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file

@@ -7,12 +7,12 @@ from   pyomo.environ import Set, Var, Binary, NonNegativeReals, RealSet, UnitInt
 from   pyomo.opt     import SolverFactory
 from   collections   import defaultdict
 import openTEPES_InputData as oT_ID
-import openTEPES_ModelFormulation_DCLoadFlow as oT_MF
+import openTEPES_ModelFormulation as oT_MF
 
 #%% inverse index generator to technology
 pTechnologyToGen = oT_ID.pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)['Generator']
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 #%% outputting the investment decisions
 if len(mTEPES.gc):
@@ -65,20 +65,20 @@ if len(mTEPES.es):
     OutputResults = pd.Series(data=[OutputResults[sc,p,n].filter(pTechnologyToGen[gt]).sum() for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
     OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv('oT_Result_ESSTechnologyEnergy_'+CaseName+'.csv', sep=',')
 
-#     ESSTechnologyEnergy = pd.Series(data=[0]*len(mTEPES.gt), index=list(mTEPES.gt))
-#     for gt in mTEPES.gt:
-#         ESSTechnologyEnergy[gt] = OutputResults.loc[:,:,:,gt].sum()
+    ESSTechnologyEnergy = pd.Series(data=[0]*len(mTEPES.gt), index=list(mTEPES.gt))
+    for gt in mTEPES.gt:
+        ESSTechnologyEnergy[gt] = OutputResults.loc[:,:,:,gt].sum()
 
-#     fig, fg = plt.subplots()
-#     def func(percentage, ESSTechnologyEnergy):
-#         absolute = int(percentage/100.*ESSTechnologyEnergy.sum())
-#         return '{:.1f}%\n({:d} GWh)'.format(percentage, absolute)
-#     wedges, texts, autotexts = plt.pie(ESSTechnologyEnergy, labels=list(mTEPES.gt), autopct=lambda percentage: func(percentage, ESSTechnologyEnergy), shadow=True, startangle=90, textprops=dict(color='w'))
-#     plt.legend(wedges, list(mTEPES.gt), title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-#     plt.setp(autotexts, size=8, weight='bold')
-#     plt.axis('equal')
-#     plt.show()
-#     plt.savefig('oT_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches='tight')
+    fig, fg = plt.subplots()
+    def func(percentage, ESSTechnologyEnergy):
+        absolute = int(percentage/100.*ESSTechnologyEnergy.sum())
+        return '{:.1f}%\n({:d} GWh)'.format(percentage, absolute)
+    wedges, texts, autotexts = plt.pie(ESSTechnologyEnergy, labels=list(mTEPES.gt), autopct=lambda percentage: func(percentage, ESSTechnologyEnergy), shadow=True, startangle=90, textprops=dict(color='w'))
+    plt.legend(wedges, list(mTEPES.gt), title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+    plt.setp(autotexts, size=8, weight='bold')
+    plt.axis('equal')
+    plt.show()
+    plt.savefig('oT_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches='tight')
 
     OutputResults = pd.Series(data=[mTEPES.vESSInventory[sc,p,n,es]()              for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es)))
     OutputResults *= 1e3
@@ -100,37 +100,37 @@ OutputResults.to_frame(name='MW').reset_index().pivot_table(index=['level_0','le
 
 TechnologyOutput = OutputResults.loc[:,:,:,:]
 
-# for sc,p in mTEPES.sc*mTEPES.p:
-#     fig, fg = plt.subplots()
-#     fg.stackplot(range(len(mTEPES.n)),  TechnologyOutput.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=list(mTEPES.gt))
-#     #fg.stackplot(range(len(mTEPES.n)), -TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=list(mTEPES.gt))
-#     fg.plot     (range(len(mTEPES.n)),  oT_ID.pDemand.sum(axis=1)*1e3, label='Demand', linewidth=0.2, color='k')
-#     fg.set(xlabel='Hours', ylabel='MW')
-#     plt.title(sc)
-#     fg.tick_params(axis='x', rotation=90)
-#     fg.legend()
-#     plt.tight_layout()
-#     plt.show()
-#     plt.savefig('oT_TechnologyOutput_'+sc+'_'+p+'_'+CaseName+'.png', bbox_inches='tight')
+for sc,p in mTEPES.sc*mTEPES.p:
+    fig, fg = plt.subplots()
+    fg.stackplot(range(len(mTEPES.n)),  TechnologyOutput.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=list(mTEPES.gt))
+    #fg.stackplot(range(len(mTEPES.n)), -TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=list(mTEPES.gt))
+    fg.plot     (range(len(mTEPES.n)),  oT_ID.pDemand.sum(axis=1)*1e3, label='Demand', linewidth=0.2, color='k')
+    fg.set(xlabel='Hours', ylabel='MW')
+    plt.title(sc)
+    fg.tick_params(axis='x', rotation=90)
+    fg.legend()
+    plt.tight_layout()
+    plt.show()
+    plt.savefig('oT_TechnologyOutput_'+sc+'_'+p+'_'+CaseName+'.png', bbox_inches='tight')
 
 OutputResults = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*oT_ID.pDuration[n] for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g)))
 OutputResults = pd.Series(data=[OutputResults[sc,p,n].filter(pTechnologyToGen[gt]).sum() for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
 OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv('oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
 
-# TechnologyEnergy = pd.Series(data=[0]*len(mTEPES.gt), index=list(mTEPES.gt))
-# for gt in mTEPES.gt:
-#     TechnologyEnergy[gt] = OutputResults.loc[:,:,:,gt].sum()
+TechnologyEnergy = pd.Series(data=[0]*len(mTEPES.gt), index=list(mTEPES.gt))
+for gt in mTEPES.gt:
+    TechnologyEnergy[gt] = OutputResults.loc[:,:,:,gt].sum()
 
-# fig, fg = plt.subplots()
-# def func(percentage, TechnologyEnergy):
-#     absolute = int(percentage/100.*TechnologyEnergy.sum())
-#     return '{:.1f}%\n({:d} GWh)'.format(percentage, absolute)
-# wedges, texts, autotexts = plt.pie(TechnologyEnergy, labels=list(mTEPES.gt), autopct=lambda percentage: func(percentage, TechnologyEnergy), shadow=True, startangle=90, textprops=dict(color='w'))
-# plt.legend(wedges, list(mTEPES.gt), title='Energy Generation', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-# plt.setp(autotexts, size=8, weight='bold')
-# plt.axis('equal')
-# plt.show()
-# plt.savefig('oT_TechnologyEnergy_'+CaseName+'.png', bbox_inches='tight')
+fig, fg = plt.subplots()
+def func(percentage, TechnologyEnergy):
+    absolute = int(percentage/100.*TechnologyEnergy.sum())
+    return '{:.1f}%\n({:d} GWh)'.format(percentage, absolute)
+wedges, texts, autotexts = plt.pie(TechnologyEnergy, labels=list(mTEPES.gt), autopct=lambda percentage: func(percentage, TechnologyEnergy), shadow=True, startangle=90, textprops=dict(color='w'))
+plt.legend(wedges, list(mTEPES.gt), title='Energy Generation', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+plt.setp(autotexts, size=8, weight='bold')
+plt.axis('equal')
+plt.show()
+plt.savefig('oT_TechnologyEnergy_'+CaseName+'.png', bbox_inches='tight')
 
 #%% outputting the network operation
 OutputResults = pd.DataFrame.from_dict(mTEPES.vFlow.extract_values(), orient='index', columns=[str(mTEPES.vFlow)])
@@ -167,17 +167,17 @@ OutputResults.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0',
 
 LSRMC = OutputResults.loc[:,:]
 
-# fig, fg = plt.subplots()
-# for nd in mTEPES.nd:
-#     fg.plot(range(len(mTEPES.sc*mTEPES.p*mTEPES.n)), LSRMC[:,:,:,nd], label=nd)
-# fg.set(xlabel='Hours', ylabel='EUR/MWh')
-# fg.set_ybound(lower=0, upper=100)
-# plt.title('LSRMC')
-# fg.tick_params(axis='x', rotation=90)
-# fg.legend()
-# plt.tight_layout()
-# plt.show()
-# plt.savefig('oT_LSRMC_'+CaseName+'.png', bbox_inches='tight')
+fig, fg = plt.subplots()
+for nd in mTEPES.nd:
+    fg.plot(range(len(mTEPES.sc*mTEPES.p*mTEPES.n)), LSRMC[:,:,:,nd], label=nd)
+fg.set(xlabel='Hours', ylabel='EUR/MWh')
+fg.set_ybound(lower=0, upper=100)
+plt.title('LSRMC')
+fg.tick_params(axis='x', rotation=90)
+fg.legend()
+plt.tight_layout()
+plt.show()
+plt.savefig('oT_LSRMC_'+CaseName+'.png', bbox_inches='tight')
 
 WritingResultsTime = time.time() - StartTime
 StartTime          = time.time()

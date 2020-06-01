@@ -9,7 +9,6 @@ from   pyomo.opt     import SolverFactory
 from   collections   import defaultdict
 import openTEPES_InputData as oT_ID
 import builtins
-import math
 
 # %% Model Formulation
 # mTEPES.L         = RangeSet(20)
@@ -37,10 +36,7 @@ import math
 # mTEPES.delta_S   = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la,                           doc='Delta Apparent Power Flow                                                   [GVA]')
 # mTEPES.m         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L,                 doc='Delta Active and Reactive Power Flow                                        [GVA]')
 
-L                              = range(1, 20)
-pBusGshb                       = oT_ID.dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(gshb=0) 
-pBusBshb                       = oT_ID.dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(bshb=0)
-
+L                              = range(20)
 pLineR                         = oT_ID.pLineX * 0 + 0.01
 pLineBsh                       = oT_ID.pLineX * 0
 pLineTAP                       = oT_ID.pLineX * 0 + 1
@@ -53,12 +49,10 @@ pLineTAP                       = 1/pLineTAP
 pLineFi                        = (pLineFi*3.14159265359)/180
 
 pLineDelta_S                   = pLineSmax/len(L)
-pLineM                         = oT_ID.pLineNTC.to_frame()
+
 for ni,nf,cc in mTEPES.la:
     for k in L:
-        pLineM[str(k)] = (2*k-1)*(pLineDelta_S[ni, nf, cc])
-
-pLineM.drop([0], axis=1)
+        pLineM[ni, nf, cc, k] = (2*k-1)*(pLineDelta_S[ni, nf, cc])
 
 #create VAR LINEARIZATION
 mTEPES.vDelta_P                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L,                   doc='Delta Active Power Flow                                        [GVA]')
@@ -80,7 +74,7 @@ def eTotalFCost(mTEPES):
 mTEPES.eTotalFCost = Constraint(rule=eTotalFCost, doc='total system fixed    cost [MEUR]')
 
 def eTotalVCost(mTEPES):
-    return mTEPES.vTotalVCost == (sum(oT_ID.pScenProb[sc] * oT_ID.pDuration[n] * oT_ID.pENSCost             * mTEPES.vENS        [sc,p,n,nd] * oT_ID.pDemand[nd][sc,p,n] * (1 + math.tan(math.acos(0.9))) for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
+    return mTEPES.vTotalVCost == (sum(oT_ID.pScenProb[sc] * oT_ID.pDuration[n] * oT_ID.pENSCost             * mTEPES.vENS        [sc,p,n,nd] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
                                   sum(oT_ID.pScenProb[sc] * oT_ID.pDuration[n] * oT_ID.pLinearVarCost  [nr] * mTEPES.vTotalOutput[sc,p,n,nr]                                                         +
                                       oT_ID.pScenProb[sc] * oT_ID.pDuration[n] * oT_ID.pConstantVarCost[nr] * mTEPES.vCommitment [sc,p,n,nr]                                                         +
                                       oT_ID.pScenProb[sc]                * oT_ID.pStartUpCost    [nr] * mTEPES.vStartUp    [sc,p,n,nr]                                                         +
@@ -134,22 +128,12 @@ mTEPES.eOperReserveDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eOperRese
 print('eOperReserveDw        ... ', len(mTEPES.eOperReserveDw), ' rows')
 
 def eBalance(mTEPES,sc,p,n,nd):
-    return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in oT_ID.pNode2Gen[nd]) - sum(mTEPES.vESSCharge[sc,p,n,es] for es in oT_ID.pNode2ESS[nd]) == oT_ID.pDemand[nd][sc,p,n]*(1-mTEPES.vENS[sc,p,n,nd]) +
-        sum(mTEPES.vP[sc,p,n,nd,lout ] + pLineR[nd,lout] * vCurrentFlow_sqr[sc,p,n,nd,lout ] for lout  in oT_ID.lout[nd]) -
-        sum(mTEPES.vP[sc,p,n,ni,nd,cc] for ni,cc in oT_ID.lin [nd])) -
-        mTEPES.vVoltage_sqr[sc,p,n,nd] * pBusGshb['gshb']['nd']
+    return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in oT_ID.pNode2Gen[nd]) - sum(mTEPES.vESSCharge[sc,p,n,es] for es in oT_ID.pNode2ESS[nd]) + mTEPES.vENS[sc,p,n,nd] == oT_ID.pDemand[nd][sc,p,n] +
+        sum(mTEPES.vLineLosses[sc,p,n,nd,lout ] for lout  in oT_ID.loutl[nd]) + sum(mTEPES.vFlow[sc,p,n,nd,lout ] for lout  in oT_ID.lout[nd]) +
+        sum(mTEPES.vLineLosses[sc,p,n,ni,nd,cc] for ni,cc in oT_ID.linl [nd]) - sum(mTEPES.vFlow[sc,p,n,ni,nd,cc] for ni,cc in oT_ID.lin [nd]))
 mTEPES.eBalance = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance, doc='load generation balance [GW]')
 
 print('eBalance              ... ', len(mTEPES.eBalance), ' rows')
-
-def eReactiveBalance(mTEPES,sc,p,n,nd):
-    return (sum(mTEPES.vReactiveTotalOutput[sc,p,n,g] for g in oT_ID.pNode2Gen[nd]) == oT_ID.pDemand[nd][sc,p,n]*math.tan(math.acos(0.9))*(1-mTEPES.vENS[sc,p,n,nd]) +
-        sum(mTEPES.vQ[sc,p,n,nd,lout ] - pLineBsh[nd,lout] * mTEPES.vVoltage_sqr[sc,p,n,nd] + oT_ID.pLineX[nd,lout] * vCurrentFlow_sqr[sc,p,n,nd,lout ] for lout  in oT_ID.lout[nd]) -
-        sum(mTEPES.vQ[sc,p,n,ni,nd,cc] + pLineBsh[nd,lout] * mTEPES.vVoltage_sqr[sc,p,n,nd] for ni,cc in oT_ID.lin [nd])) - 
-        mTEPES.vVoltage_sqr[sc,p,n,nd] * pBusBshb['bshb']['nd']
-mTEPES.eReactiveBalance = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance, doc='load generation balance [GW]')
-
-print('eRreactiveBalance              ... ', len(mTEPES.eBalance), ' rows')
 
 def eESSInventory(mTEPES,sc,p,n,es):
     if   mTEPES.n.ord(n) == oT_ID.pESSTimeStep[es]:
@@ -186,12 +170,6 @@ mTEPES.eMinOutput2ndBlock = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr,
 print('eMinOutput2ndBlock    ... ', len(mTEPES.eMinOutput2ndBlock), ' rows')
 
 def eTotalOutput(mTEPES,sc,p,n,nr):
-    return mTEPES.vTotalOutput[sc,p,n,nr] == oT_ID.pMinPower[nr][sc,p,n] * mTEPES.vCommitment[sc,p,n,nr] + mTEPES.vOutput2ndBlock[sc,p,n,nr]
-mTEPES.eTotalOutput = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]')
-
-print('eTotalOutput          ... ', len(mTEPES.eTotalOutput), ' rows')
-
-def eReactiveTotalOutput(mTEPES,sc,p,n,nr):
     return mTEPES.vTotalOutput[sc,p,n,nr] == oT_ID.pMinPower[nr][sc,p,n] * mTEPES.vCommitment[sc,p,n,nr] + mTEPES.vOutput2ndBlock[sc,p,n,nr]
 mTEPES.eTotalOutput = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]')
 
@@ -261,22 +239,14 @@ StartTime           = time.time()
 print('Generating minimum up/down time       ... ', round(GeneratingMinUDTime), 's')
 
 #%%
-# def eInstalNetCap1(mTEPES,sc,p,n,ni,nf,cc):
-#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] >= - mTEPES.vNetworkInvest[ni,nf,cc]
-# mTEPES.eInstalNetCap1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap1, doc='maximum flow by installed network capacity [p.u.]')
-
 def eInstalNetCap1(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vP[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] >= - mTEPES.vNetworkInvest[ni,nf,cc]
+    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] >= - mTEPES.vNetworkInvest[ni,nf,cc]
 mTEPES.eInstalNetCap1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap1, doc='maximum flow by installed network capacity [p.u.]')
 
 print('eInstalNetCap1        ... ', len(mTEPES.eInstalNetCap1), ' rows')
 
-# def eInstalNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
-# mTEPES.eInstalNetCap2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap2, doc='maximum flow by installed network capacity [p.u.]')
-
 def eInstalNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vP[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
+    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / oT_ID.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
 mTEPES.eInstalNetCap2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap2, doc='maximum flow by installed network capacity [p.u.]')
 
 print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
