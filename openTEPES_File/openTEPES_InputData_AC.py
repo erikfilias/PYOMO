@@ -2,7 +2,7 @@
 
 import time
 import pandas        as pd
-from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, RealSet, UnitInterval, Boolean
+from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, RealSet, UnitInterval, Boolean, RangeSet
 
 print('Input data            ****')
 
@@ -419,45 +419,66 @@ for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
      if pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % (8736/pTimeStep) == 0:
          mTEPES.vESSInventory[sc,p,n,es].fix(pESSInitialInventory[es])
 
+#%% AC Power Flow: Additional Sets
+mTEPES.L                       = RangeSet(20)
+
 #%% AC Power Flow: Additional Parameters
-L                              = range(1, 20)
+pVmin                          = 0.95
+pVnom                          = 1.00
+pVmax                          = 1.05
+
 pBusGshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(gshb=0)
 pBusBshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(bshb=0)
 
-pLineR                         = mTEPES.pLineX * 0 + 0.01
-pLineBsh                       = mTEPES.pLineX * 0
-pLineTAP                       = mTEPES.pLineX * 0 + 1
-pLineFi                        = mTEPES.pLineX * 0
-pLineSmax                      = mTEPES.pLineNTC * 1.5
+pLineBsh                       = pLineX * 0
+pLineTAP                       = pLineX * 0 + 1
+pLineFi                        = pLineX * 0
 
-pLineZ2                        = pLineR**2 + oT_ID.pLineX**2
+
+
+pLineR                         = pLineX * 0 + 0.01
+pLineSmax                      = pLineNTC * 1.5
+
+pLineZ2                        = pLineR**2 + pLineX**2
 pLineBsh                       = pLineBsh/2
 pLineTAP                       = 1/pLineTAP
 pLineFi                        = (pLineFi*3.14159265359)/180
 
-pLineDelta_S                   = pLineSmax/len(L)
-pLineM                         = oT_ID.pLineNTC.to_frame()
-for ni,nf,cc in mTEPES.la:
-    for k in L:
-        pLineM[str(k)] = (2*k-1)*(pLineDelta_S[ni, nf, cc])
 
-pLineM.drop([0], axis=1)
+mTEPES.pLineR                  = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineR.to_dict()                 , within=NonNegativeReals, doc='Resistance'                   )
+mTEPES.pLineSmax               = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineSmax.to_dict()              , within=NonNegativeReals, doc='Apparent power capacity'      )
+mTEPES.pLineZ2                 = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineZ2.to_dict()                , within=NonNegativeReals, doc='Squared impedance'            )
+mTEPES.pLineBsh                = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineBsh.to_dict()               , within=NonNegativeReals, doc='Susceptance'                  )
+mTEPES.pLineTAP                = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineTAP.to_dict()               , within=NonNegativeReals, doc='Tap changer'                  )
+mTEPES.pLineFi                 = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineFi.to_dict()                , within=NonNegativeReals, doc='Phase shifter'                )
+
+def delta_S_init(mTEPES,i,j,cc):
+    a = (pLineSmax[i,j,cc])/len(mTEPES.L)
+    return a
+mTEPES.pLineDelta_S            = Param(         mTEPES.la, initialize = delta_S_init                   , within=NonNegativeReals, doc='Delta of Smax splitted by L'  )
+
+def m_init(mTEPES,i,j,cc,l):
+    a = (2*l-1)*(mTEPES.pLineDelta_S[i,j,cc])
+    return a
+mTEPES.pLineM                  = Param( mTEPES.la,mTEPES.L, initialize = m_init                   , within=NonNegativeReals, doc='M partitions of Delta Smax'   )
+
 
 #%% AC Power Flow: Additional Variables
-mTEPES.vDelta_P                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L,                   doc='Delta Active Power Flow                                        [GVA]')
-mTEPES.vDelta_Q                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L,                   doc='Delta Reactive Power Flow                                      [GVA]')
-mTEPES.vP_max                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la,                             doc='Maximum bound of Active Power Flow                             [GVA]')
-mTEPES.vP_min                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la,                             doc='Minimum bound of Active Power Flow                             [GVA]')
-mTEPES.vQ_max                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la,                             doc='Maximum bound of Reactive Power Flow                           [GVA]')
-mTEPES.vQ_min                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la,                             doc='Minimum bound of Reactive Power Flow                           [GVA]')
+# def _bounds_Delta_S_rule(mTEPES, sc, p, n, la, L):
+#     return (0, mTEPES.pLineDelta_S[la])
+mTEPES.vDelta_P                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la,L:(0, mTEPES.pLineDelta_S[la]),          doc='Delta Active Power Flow                                       [  GW]')
+mTEPES.vDelta_Q                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, mTEPES.L, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la,L:(0, mTEPES.pLineDelta_S[la]),          doc='Delta Reactive Power Flow                                     [GVaR]')
+mTEPES.vP_max                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    doc='Maximum bound of Active Power Flow                            [  GW]')
+mTEPES.vP_min                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    doc='Minimum bound of Active Power Flow                            [  GW]')
+mTEPES.vQ_max                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    doc='Maximum bound of Reactive Power Flow                          [GVaR]')
+mTEPES.vQ_min                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    doc='Minimum bound of Reactive Power Flow                          [GVaR]')
 
-#VARIABLES
-mTEPES.vVoltage_sqr            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,nd:(Vmin**2,Vmax**2),          doc='voltage magnitude                                   [p.u.]')
-mTEPES.vCurrentFlow_sqr        = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la:(0,pLineNTC[la]),          doc='Current flow                                          [A]')
-mTEPES.vP                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Active Power Flow                                               [GW]')
-mTEPES.vQ                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Reactive Power Flow                                             [GW]')
-mTEPES.vReactiveTotalOutput    = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=RealSet,             doc='Total output of reactive power of the unit                      [GVAr]')
-
+# #VARIABLES
+mTEPES.vVoltageMag_sqr         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,nd:(pVmin**2,pVmax**2),          doc='Voltage magnitude                                   [p.u.]')
+mTEPES.vCurrentFlow_sqr        = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la:(0,pLineNTC[la]**2),         doc='Current flow                                           [A]')
+mTEPES.vP                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Active Power Flow through lines                                 [GW]')
+mTEPES.vQ                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Reactive Power Flow through lines                               [GW]')
+mTEPES.vReactiveTotalOutput    = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=RealSet,             doc='Total output of reactive power generators                     [GVAr]')
 
 
 SettingUpDataTime = time.time() - StartTime
