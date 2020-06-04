@@ -335,7 +335,8 @@ mTEPES.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, wit
 mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es:(mTEPES.pESSMinStorage[sc,p,n,es],mTEPES.pESSMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [TWh]')
 mTEPES.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                     doc='ESS spillage                                    [TWh]')
 mTEPES.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es:(0,mTEPES.pMaxCharge       [es]       ),                             doc='ESS charge power                                 [GW]')
-mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd:(0,mTEPES.pDemand          [sc,p,n,nd]),                             doc='energy not served in node                        [GW]')
+# mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd:(0,mTEPES.pDemand          [sc,p,n,nd]),                             doc='energy not served in node                        [GW]')
+mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd:(0,1),                             doc='energy not served in node                        [GW]')
 
 if mTEPES.pIndBinGenOperat == 0:
     mTEPES.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr:(0,1),                                                               doc='commitment of the unit                          [0,1]')
@@ -418,8 +419,6 @@ for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
          mTEPES.vESSInventory[sc,p,n,es].fix(pESSInitialInventory[es])
      if pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % (8736/pTimeStep) == 0:
          mTEPES.vESSInventory[sc,p,n,es].fix(pESSInitialInventory[es])
-
-
 
 #%% AC Power Flow: Additional Sets
 mTEPES.L                       = RangeSet(20)

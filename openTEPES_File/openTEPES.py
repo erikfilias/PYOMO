@@ -96,7 +96,7 @@ builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and 
 
 import openTEPES_InputData_AC
 
-# import openTEPES_ModelFormulation_AC
+import openTEPES_ModelFormulation_AC
 #
 # # candidate discovery
 # pIndCandidateDiscovery = 0
