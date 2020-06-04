@@ -266,7 +266,8 @@ pLineNTC         [pLineNTC          < pEpsilon] = 0
 pMaxFlow = pLineNTC
 
 # maximum voltage angle
-pMaxTheta = pDemand*0 + float('inf')
+# pMaxTheta = pDemand*0 + float('inf')
+# pMaxTheta = pDemand*0 + float(1.570795)
 
 # improve boundS in maximum flow and theta
 # pIndImproveNetworkModel = 1
@@ -284,6 +285,28 @@ mTEPES.pIndNetLosses        = Param(initialize=pIndNetLosses   , within=Boolean)
 mTEPES.pENSCost             = Param(initialize=pENSCost        , within=NonNegativeReals)
 mTEPES.pCO2Cost             = Param(initialize=pCO2Cost        , within=NonNegativeReals)
 mTEPES.pSBase               = Param(initialize=pSBase          , within=NonNegativeReals)
+
+print(pDemand)
+# print(pDuration)
+# mTEPES.n.pprint()
+# pDemand = pDemand.iloc[[pDemand.index            [range(1,len(mTEPES.n))]]] 
+pDemand                     = pDemand.iloc[  range(0,len(mTEPES.n))]
+pDuration                   = pDuration.iloc[range(0,len(mTEPES.n))]
+pOperReserveUp              = pOperReserveUp.iloc[range(0,len(mTEPES.n))]
+pOperReserveDw              = pOperReserveDw.iloc[range(0,len(mTEPES.n))]
+pMinPower                   = pMinPower.iloc[range(0,len(mTEPES.n))]
+pMaxPower                   = pMaxPower.iloc[range(0,len(mTEPES.n))]
+pMaxPower2ndBlock           = pMaxPower2ndBlock.iloc[range(0,len(mTEPES.n))]
+pESSEnergyInflows           = pESSEnergyInflows.iloc[range(0,len(mTEPES.n))]
+pESSMinStorage              = pESSMinStorage.iloc[range(0,len(mTEPES.n))]
+pESSMaxStorage              = pESSMaxStorage.iloc[range(0,len(mTEPES.n))]
+# ppMaxTheta                  = pMaxTheta.iloc[range(1,len(mTEPES.n))]
+
+pMaxTheta = pDemand*0 + float(1.570795)
+
+# print(pDemand)
+# print(pDuration)
+# mTEPES.n.pprint()
 
 mTEPES.pDemand              = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
 mTEPES.pScenProb            = Param(mTEPES.sc,                                initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
@@ -364,8 +387,8 @@ for lc in mTEPES.lc:
     if mTEPES.pIndBinNetInvest != 0 and not (mTEPES.pIndBinLineInvest[lc] == 'Yes' or mTEPES.pIndBinLineInvest[lc] == 'YES' or mTEPES.pIndBinLineInvest[lc] == 'yes' or mTEPES.pIndBinLineInvest[lc] == 'Y' or mTEPES.pIndBinLineInvest[lc] == 'y'):
         mTEPES.vNetworkInvest   [lc].domain = UnitInterval
 
-mTEPES.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,*ll:(0,0.5*mTEPES.pLineLossFactor[ll]*mTEPES.pLineNTC[ll]),     doc='half line losses                                 [GW]')
-mTEPES.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,          bounds=lambda mTEPES,sc,p,n,*la:(-mTEPES.pLineNTC[la],mTEPES.pLineNTC[la]),                 doc='flow                                             [GW]')
+# mTEPES.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,*ll:(0,0.5*mTEPES.pLineLossFactor[ll]*mTEPES.pLineNTC[ll]),     doc='half line losses                                 [GW]')
+# mTEPES.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,          bounds=lambda mTEPES,sc,p,n,*la:(-mTEPES.pLineNTC[la],mTEPES.pLineNTC[la]),                 doc='flow                                             [GW]')
 mTEPES.vTheta                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=RealSet,          bounds=lambda mTEPES,sc,p,n, nd:(-mTEPES.pMaxTheta[sc,p,n,nd],mTEPES.pMaxTheta[sc,p,n,nd]), doc='voltage angle                                   [rad]')
 
 for nr in mTEPES.nr:
@@ -428,6 +451,8 @@ mTEPES.L                       = RangeSet(20)
 pVmin                          = 0.95
 pVnom                          = 1.00
 pVmax                          = 1.05
+pCapacitivePF                  = 0.95                #Capacitive Power Factor
+pInductivePF                   = 0.99                #Inductive Power Factor
 
 pBusGshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(gshb=0)
 pBusBshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(bshb=0)
@@ -446,6 +471,11 @@ pLineBsh                       = pLineBsh/2
 pLineTAP                       = 1/pLineTAP
 pLineFi                        = (pLineFi*3.14159265359)/180
 
+#%% Parameters: Branches
+mTEPES.pBusGshb                = Param(         mTEPES.nd, initialize=pBusGshb['gshb'].to_dict()                 , within=NonNegativeReals, doc='Conductance'                   )
+mTEPES.pBusBshb                = Param(         mTEPES.nd, initialize=pBusBshb['bshb'].to_dict()                 , within=NonNegativeReals, doc='Susceptance'                   )
+
+#%% Parameters: Branches
 
 mTEPES.pLineR                  = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineR.to_dict()                 , within=NonNegativeReals, doc='Resistance'                   )
 mTEPES.pLineSmax               = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineSmax.to_dict()              , within=NonNegativeReals, doc='Apparent power capacity'      )
@@ -454,6 +484,14 @@ mTEPES.pLineBsh                = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc,
 mTEPES.pLineTAP                = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineTAP.to_dict()               , within=NonNegativeReals, doc='Tap changer'                  )
 mTEPES.pLineFi                 = Param(         mTEPES.ni, mTEPES.nf, mTEPES.cc, initialize=pLineFi.to_dict()                , within=NonNegativeReals, doc='Phase shifter'                )
 
+#%% Parameters: Power System
+mTEPES.pVmin                   = Param(         initialize=pVmin                , within=NonNegativeReals, doc='Minimum voltage magnitude'                )
+mTEPES.pVnom                   = Param(         initialize=pVnom                , within=NonNegativeReals, doc='Nominal voltage magnitude'                )
+mTEPES.pVmax                   = Param(         initialize=pVmax                , within=NonNegativeReals, doc='Maximum voltage magnitude'                )
+mTEPES.pCapacitivePF           = Param(         initialize=pCapacitivePF        , within=NonNegativeReals, doc='Capacitive power factor'                  )
+mTEPES.pInductivePF            = Param(         initialize=pInductivePF         , within=NonNegativeReals, doc='Inductive power factor'                   )
+
+#%% Parameters: Linearization
 def delta_S_init(mTEPES,i,j,cc):
     a = (pLineSmax[i,j,cc])/len(mTEPES.L)
     return a
@@ -477,7 +515,7 @@ mTEPES.vQ_min                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, w
 
 # #VARIABLES
 mTEPES.vVoltageMag_sqr         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,nd:(pVmin**2,pVmax**2),          doc='Voltage magnitude                                   [p.u.]')
-mTEPES.vCurrentFlow_sqr        = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la:(0,pLineNTC[la]**2),         doc='Current flow                                           [A]')
+mTEPES.vCurrentFlow_sqr        = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la:(0,(pLineNTC[la]**2/pVmax)),         doc='Current flow                                           [A]')
 mTEPES.vP                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Active Power Flow through lines                                 [GW]')
 mTEPES.vQ                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Reactive Power Flow through lines                               [GW]')
 mTEPES.vReactiveTotalOutput    = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=RealSet,             doc='Total output of reactive power generators                     [GVAr]')

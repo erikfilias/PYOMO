@@ -1,7 +1,12 @@
 
 import psutil        # access the number of CPUs
-
+import time
 from   pyomo.opt     import SolverFactory
+from   pyomo.environ import Suffix
+
+pIndBinGenInvest = 0
+pIndBinNetInvest = 0
+pIndBinGenOperat = 0
 
 #%% solving the problem
 Solver = SolverFactory('gurobi')                                                       # select solver

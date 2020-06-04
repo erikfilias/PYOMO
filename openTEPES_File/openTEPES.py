@@ -97,39 +97,39 @@ builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and 
 import openTEPES_InputData_AC
 
 import openTEPES_ModelFormulation_AC
-#
-# # candidate discovery
-# pIndCandidateDiscovery = 0
-# if pIndCandidateDiscovery == 1:
-#     pIndBinGenInvestSaved   = mTEPES.pIndBinGenInvest
-#     pIndBinNetInvestSaved   = mTEPES.pIndBinNetInvest
-#     pIndBinGenOperatSaved   = mTEPES.pIndBinGenOperat
-#     mTEPES.pIndBinGenInvest = 0
-#     mTEPES.pIndBinNetInvest = 0
-#     mTEPES.pIndBinGenOperat = 0
-#     # pIndMemorySolving = 0
-#     # if pIndMemorySolving == 0:
-#     #     import openTEPES_ProblemSolving
-#     # else:
-#     #     import openTEPES_MemorySolving
-#     import openTEPES_ProblemSolving
-#     import openTEPES_CandidateDiscovery
-#     mTEPES.pIndBinGenInvest = pIndBinGenInvestSaved
-#     mTEPES.pIndBinNetInvest = pIndBinNetInvestSaved
-#     mTEPES.pIndBinGenOperat = pIndBinGenOperatSaved
-#
-# # solve lossless first and fix the generation and network investment decisions
-# pIndLosslessSolving = 0
-# if pIndLosslessSolving == 1 and mTEPES.pIndNetLosses == 1:
-#     import openTEPES_LosslessSolve
-#
-# # solve the problem in memory (persistent) or writing the lp file
-# pIndMemorySolving = 0
-# if pIndMemorySolving == 0:
-#     import openTEPES_ProblemSolving
-# else:
-#     import openTEPES_MemorySolving
-#
+
+# candidate discovery
+pIndCandidateDiscovery = 0
+if pIndCandidateDiscovery == 1:
+    pIndBinGenInvestSaved   = mTEPES.pIndBinGenInvest
+    pIndBinNetInvestSaved   = mTEPES.pIndBinNetInvest
+    pIndBinGenOperatSaved   = mTEPES.pIndBinGenOperat
+    mTEPES.pIndBinGenInvest = 0
+    mTEPES.pIndBinNetInvest = 0
+    mTEPES.pIndBinGenOperat = 0
+    # pIndMemorySolving = 0
+    # if pIndMemorySolving == 0:
+    #     import openTEPES_ProblemSolving
+    # else:
+    #     import openTEPES_MemorySolving
+    import openTEPES_ProblemSolving
+    import openTEPES_CandidateDiscovery
+    mTEPES.pIndBinGenInvest = pIndBinGenInvestSaved
+    mTEPES.pIndBinNetInvest = pIndBinNetInvestSaved
+    mTEPES.pIndBinGenOperat = pIndBinGenOperatSaved
+
+# solve lossless first and fix the generation and network investment decisions
+pIndLosslessSolving = 0
+if pIndLosslessSolving == 1 and mTEPES.pIndNetLosses == 1:
+    import openTEPES_LosslessSolve
+
+# solve the problem in memory (persistent) or writing the lp file
+pIndMemorySolving = 0
+if pIndMemorySolving == 0:
+    import openTEPES_ProblemSolving
+else:
+    import openTEPES_MemorySolving
+
 # # stage solving with expansion decisions fixed
 # pIndStageSolving        = 0
 # pIndSequentialSolving   = 0

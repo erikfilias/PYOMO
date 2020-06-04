@@ -2,7 +2,7 @@
 
 import time
 from   collections   import defaultdict
-from   pyomo.environ import Constraint, Objective, minimize
+from   pyomo.environ import Constraint, Objective, minimize, tan, acos
 
 print('Model formulation     ****')
 
@@ -13,7 +13,7 @@ def eTotalFCost(mTEPES):
 mTEPES.eTotalFCost = Constraint(rule=eTotalFCost, doc='total system fixed    cost [MEUR]')
 
 def eTotalVCost(mTEPES):
-    return mTEPES.vTotalVCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost             * mTEPES.vENS        [sc,p,n,nd] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
+    return mTEPES.vTotalVCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost             * mTEPES.vENS        [sc,p,n,nd] * mTEPES.pDemand[sc,p,n,nd] * (1+tan(acos(mTEPES.pCapacitivePF))) for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
                                   sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * mTEPES.vTotalOutput[sc,p,n,nr]                                                         +
                                       mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * mTEPES.vCommitment [sc,p,n,nr]                                                         +
                                       mTEPES.pScenProb[sc]                       * mTEPES.pStartUpCost    [nr] * mTEPES.vStartUp    [sc,p,n,nr]                                                         +
@@ -80,11 +80,11 @@ for ni,nf,cc in mTEPES.ll:
 for ni,nf,cc in mTEPES.ll:
     loutl[ni].append((nf,cc))
 
-def eBalance(mTEPES,sc,p,n,nd):
-    return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in mTEPES.g if (nd,g) in mTEPES.n2g) - sum(mTEPES.vESSCharge[sc,p,n,es] for es in mTEPES.es if (nd,es) in mTEPES.n2g) + mTEPES.vENS[sc,p,n,nd] == mTEPES.pDemand[sc,p,n,nd] +
-        sum(mTEPES.vLineLosses[sc,p,n,nd,lout ] for lout  in loutl[nd]) + sum(mTEPES.vFlow[sc,p,n,nd,lout ] for lout  in lout[nd]) +
-        sum(mTEPES.vLineLosses[sc,p,n,ni,nd,cc] for ni,cc in linl [nd]) - sum(mTEPES.vFlow[sc,p,n,ni,nd,cc] for ni,cc in lin [nd]))
-mTEPES.eBalance = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance, doc='load generation balance [GW]')
+def eBalance_P(mTEPES,sc,p,n,nd):
+    return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in mTEPES.g if (nd,g) in mTEPES.n2g) - sum(mTEPES.vESSCharge[sc,p,n,es] for es in mTEPES.es if (nd,es) in mTEPES.n2g) == mTEPES.pDemand[sc,p,n,nd] * (1 - mTEPES.vENS[sc,p,n,nd]) +
+        sum(mTEPES.vP[sc,p,n,nd,lout ] + mTEPES.pLineR[nd,lout ] * mTEPES.vCurrentFlow_sqr[sc,p,n,nd,lout ] for lout  in lout[nd]) -
+        sum(mTEPES.vP[sc,p,n,ni,nd,cc] for ni,cc in linl [nd]) + mTEPES.vVoltageMag_sqr[sc,p,n,nd] * mTEPES.pBusGshb[nd])
+mTEPES.eBalance_P = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance_P, doc='Active power generation balance [GW]')
         # sum(mTEPES.vFlow      [sc,p,n,nd,nf,cc] for nf,cc in mTEPES.nf*mTEPES.cc if (nd,nf,cc) in mTEPES.la ) -
         # sum(mTEPES.vFlow      [sc,p,n,ni,nd,cc] for ni,cc in mTEPES.ni*mTEPES.cc if (nd,ni,cc) in mTEPES.lin) +
         # sum(mTEPES.vLineLosses[sc,p,n,nd,nf,cc] for nf,cc in mTEPES.nf*mTEPES.cc if (nd,nf,cc) in mTEPES.ll ) +
@@ -93,8 +93,14 @@ mTEPES.eBalance = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBal
         # sum(mTEPES.vFlow      [sc,p,n,ni,nd,cc] for ni,cc in mTEPES.ni*mTEPES.cc if (ni,nd,cc) in mTEPES.la) +
         # sum(mTEPES.vLineLosses[sc,p,n,nd,nf,cc] for nf,cc in mTEPES.nf*mTEPES.cc if (nd,nf,cc) in mTEPES.ll) +
         # sum(mTEPES.vLineLosses[sc,p,n,ni,nd,cc] for ni,cc in mTEPES.ni*mTEPES.cc if (ni,nd,cc) in mTEPES.ll) )
+print('eBalance_P            ... ', len(mTEPES.eBalance_P), ' rows')
 
-print('eBalance              ... ', len(mTEPES.eBalance), ' rows')
+def eBalance_Q(mTEPES,sc,p,n,nd):
+    return (sum(mTEPES.vReactiveTotalOutput[sc,p,n,g] for g in mTEPES.g if (nd,g) in mTEPES.n2g) == mTEPES.pDemand[sc,p,n,nd]* (tan(acos(mTEPES.pCapacitivePF))) * (1 - mTEPES.vENS[sc,p,n,nd]) +
+        sum(mTEPES.vQ[sc,p,n,nd,lout ] - mTEPES.pLineBsh[nd,lout ] * mTEPES.vVoltageMag_sqr[sc,p,n,nd] + mTEPES.pLineX[nd,lout] * mTEPES.vCurrentFlow_sqr[sc,p,n,nd,lout ] for lout  in lout[nd]) -
+        sum(mTEPES.vQ[sc,p,n,ni,nd,cc] + mTEPES.pLineBsh[ni,nd,cc] * mTEPES.vVoltageMag_sqr[sc,p,n,nd] for ni,cc in lin [nd]) - mTEPES.vVoltageMag_sqr[sc,p,n,nd] * mTEPES.pBusBshb[nd])
+mTEPES.eBalance_Q = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance_Q, doc='Reactive power generation balance [GVaR]')
+print('eBalance_Q            ... ', len(mTEPES.eBalance_Q), ' rows')
 
 def eESSInventory(mTEPES,sc,p,n,es):
     if   mTEPES.n.ord(n) == mTEPES.pESSTimeStep[es]:
@@ -130,11 +136,23 @@ mTEPES.eMinOutput2ndBlock = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr,
 
 print('eMinOutput2ndBlock    ... ', len(mTEPES.eMinOutput2ndBlock), ' rows')
 
-def eTotalOutput(mTEPES,sc,p,n,nr):
+def eTotalOutput_P(mTEPES,sc,p,n,nr):
     return mTEPES.vTotalOutput[sc,p,n,nr] == mTEPES.pMinPower[sc,p,n,nr] * mTEPES.vCommitment[sc,p,n,nr] + mTEPES.vOutput2ndBlock[sc,p,n,nr]
-mTEPES.eTotalOutput = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]')
+mTEPES.eTotalOutput_P = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput_P, doc='total output of active power by a unit [GW]')
 
-print('eTotalOutput          ... ', len(mTEPES.eTotalOutput), ' rows')
+print('eTotalOutput_P        ... ', len(mTEPES.eTotalOutput_P), ' rows')
+
+def eTotalOutput_Q_Capacitive(mTEPES,sc,p,n,nr):
+    return mTEPES.vReactiveTotalOutput[sc,p,n,nr] <=  mTEPES.vTotalOutput[sc,p,n,nr] * (tan(acos(mTEPES.pCapacitivePF)))
+mTEPES.eTotalOutput_Q1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput_Q_Capacitive, doc='total output of reactive power by a unit in the capacitive side [GW]')
+
+print('eTotalOutput_Q1       ... ', len(mTEPES.eTotalOutput_Q1), ' rows')
+
+def eTotalOutput_Q_Inductive(mTEPES,sc,p,n,nr):
+    return mTEPES.vReactiveTotalOutput[sc,p,n,nr] >= -mTEPES.vTotalOutput[sc,p,n,nr] * (tan(acos(mTEPES.pInductivePF)))
+mTEPES.eTotalOutput_Q2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput_Q_Inductive, doc='total output of reactive power by a unit in the inductive side [GVaR]')
+
+print('eTotalOutput_Q2       ... ', len(mTEPES.eTotalOutput_Q2), ' rows')
 
 def eUCStrShut(mTEPES,sc,p,n,nr):
     if n == mTEPES.n.first():
@@ -200,49 +218,124 @@ StartTime           = time.time()
 print('Generating minimum up/down time       ... ', round(GeneratingMinUDTime), 's')
 
 #%%
-def eInstalNetCap1(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pLineNTC[ni,nf,cc] >= - mTEPES.vNetworkInvest[ni,nf,cc]
-mTEPES.eInstalNetCap1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap1, doc='maximum flow by installed network capacity [p.u.]')
+def eInstalNetCap(mTEPES,sc,p,n,ni,nf,cc):
+    return mTEPES.vCurrentFlow_sqr[sc,p,n,ni,nf,cc] / (mTEPES.pLineNTC[ni,nf,cc] ** 2 / mTEPES.pVmax) <= mTEPES.vNetworkInvest[ni,nf,cc]
+mTEPES.eInstalNetCap = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap, doc='maximum flow by installed network capacity [p.u.]')
 
-print('eInstalNetCap1        ... ', len(mTEPES.eInstalNetCap1), ' rows')
+print('eInstalNetCap         ... ', len(mTEPES.eInstalNetCap), ' rows')
 
-def eInstalNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
-mTEPES.eInstalNetCap2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap2, doc='maximum flow by installed network capacity [p.u.]')
+def eVoltageDiffExst(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vVoltageMag_sqr[sc,p,n,ni] * (mTEPES.pLineTAP[ni,nf,cc]**2) - mTEPES.vVoltageMag_sqr[sc,p,n,nf] == 
+            mTEPES.pLineZ2[ni,nf,cc] * mTEPES.vCurrentFlow_sqr[sc,p,n,ni,nf,cc] + 
+            2 * (mTEPES.pLineR[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] + mTEPES.pLineX[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc]))
+mTEPES.eVoltageDiffExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eVoltageDiffExst, doc='Voltage difference between nodes considering existent lines [p.u.]')
 
-print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
+print('eVoltageDiffExst      ... ', len(mTEPES.eVoltageDiffExst), ' rows')
 
-def eKirchhoff2ndLawExst(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] == (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase
-mTEPES.eKirchhoff2ndLawExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eKirchhoff2ndLawExst, doc='flow for each AC existing  line [rad]')
+def eVoltageDiffCand1(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vVoltageMag_sqr[sc,p,n,ni] * (mTEPES.pLineTAP[ni,nf,cc]**2) - mTEPES.vVoltageMag_sqr[sc,p,n,nf] -
+            mTEPES.pLineZ2[ni,nf,cc] * mTEPES.vCurrentFlow_sqr[sc,p,n,ni,nf,cc] - 
+            2 * (mTEPES.pLineR[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] + mTEPES.pLineX[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc])) <=  (mTEPES.pVmax**2 - mTEPES.pVmin**2) * mTEPES.vNetworkInvest[ni,nf,cc]
+mTEPES.eVoltageDiffCand1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eVoltageDiffCand1, doc='Voltage difference between nodes considering existent lines [p.u.]')
 
-print('eKirchhoff2ndLawExst  ... ', len(mTEPES.eKirchhoff2ndLawExst), ' rows')
+print('eVoltageDiffCand1     ... ', len(mTEPES.eVoltageDiffCand1), ' rows')
 
-def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
-mTEPES.eKirchhoff2ndLawCnd1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]')
+def eVoltageDiffCand2(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vVoltageMag_sqr[sc,p,n,ni] * (mTEPES.pLineTAP[ni,nf,cc]**2) - mTEPES.vVoltageMag_sqr[sc,p,n,nf] -
+            mTEPES.pLineZ2[ni,nf,cc] * mTEPES.vCurrentFlow_sqr[sc,p,n,ni,nf,cc] - 
+            2 * (mTEPES.pLineR[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] + mTEPES.pLineX[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc])) >= -(mTEPES.pVmax**2 - mTEPES.pVmin**2) * mTEPES.vNetworkInvest[ni,nf,cc]
+mTEPES.eVoltageDiffCand2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eVoltageDiffCand2, doc='Voltage magnitude difference between nodes considering existent lines [p.u.]')
 
-print('eKirchhoff2ndLawCnd1  ... ', len(mTEPES.eKirchhoff2ndLawCnd1), ' rows')
+print('eVoltageDiffCand2     ... ', len(mTEPES.eVoltageDiffCand2), ' rows')
 
-def eKirchhoff2ndLawCnd2(mTEPES,sc,p,n,ni,nf,cc):
-    return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
-mTEPES.eKirchhoff2ndLawCnd2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]')
+def eAngleDiffExst(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.pVnom**2 * (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) == 
+            (mTEPES.pLineX[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] - mTEPES.pLineR[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc]))
+mTEPES.eAngleDiffExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eAngleDiffExst, doc='Voltage angle difference between nodes considering existent lines [p.u.]')
 
-print('eKirchhoff2ndLawCnd2  ... ', len(mTEPES.eKirchhoff2ndLawCnd2), ' rows')
+print('eAngleDiffExst        ... ', len(mTEPES.eAngleDiffExst), ' rows')
 
-def eLineLosses1(mTEPES,sc,p,n,ni,nf,cc):
-    if mTEPES.pIndNetLosses:
-        return mTEPES.vLineLosses[sc,p,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * mTEPES.vFlow[sc,p,n,ni,nf,cc]
-mTEPES.eLineLosses1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]')
+def eAngleDiffCand1(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.pVnom**2 * (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) - 
+            (mTEPES.pLineX[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] - mTEPES.pLineR[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc])) <=  2 * mTEPES.pMaxTheta[sc,p,n,ni] * mTEPES.pVmax**2 * mTEPES.vNetworkInvest[ni,nf,cc]
+mTEPES.eAngleDiffCand1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eAngleDiffCand1, doc='Voltage angle difference between nodes considering candidate lines [p.u.]')
 
-print('eLineLosses1          ... ', len(mTEPES.eLineLosses1), ' rows')
+print('eAngleDiffCand1       ... ', len(mTEPES.eAngleDiffCand1), ' rows')
 
-def eLineLosses2(mTEPES,sc,p,n,ni,nf,cc):
-    if mTEPES.pIndNetLosses:
-        return mTEPES.vLineLosses[sc,p,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * mTEPES.vFlow[sc,p,n,ni,nf,cc]
-mTEPES.eLineLosses2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]')
+def eAngleDiffCand2(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.pVnom**2 * (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) - 
+            (mTEPES.pLineX[ni,nf,cc] * mTEPES.vP[sc,p,n,ni,nf,cc] - mTEPES.pLineR[ni,nf,cc] * mTEPES.vQ[sc,p,n,ni,nf,cc])) >= -2 * mTEPES.pMaxTheta[sc,p,n,ni] * mTEPES.pVmax**2 * mTEPES.vNetworkInvest[ni,nf,cc]
+mTEPES.eAngleDiffCand2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eAngleDiffCand2, doc='Voltage angle difference between nodes considering candidate lines [p.u.]')
 
-print('eLineLosses2          ... ', len(mTEPES.eLineLosses2), ' rows')
+print('eAngleDiffCand2       ... ', len(mTEPES.eAngleDiffCand2), ' rows')
+
+def eCurrentFlow(mTEPES,sc,p,n,ni,nf,cc):
+    return ((mTEPES.pVnom**2) * mTEPES.vCurrentFlow_sqr[sc,p,n,ni,nf,cc] == sum(mTEPES.pLineM[ni,nf,cc,l] * mTEPES.vDelta_P[sc,p,n,ni,nf,cc,l] for l in mTEPES.L) + sum(mTEPES.pLineM[ni,nf,cc,l] * mTEPES.vDelta_Q[sc,p,n,ni,nf,cc,l] for l in mTEPES.L))
+mTEPES.eCurrentFlow = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eCurrentFlow, doc='Linear constraint for current flow  [p.u.]')
+
+print('eCurrentFlow          ... ', len(mTEPES.eCurrentFlow), ' rows')
+
+def eCurrentFlow_LinearP1(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vP_max[sc,p,n,ni,nf,cc] - mTEPES.vP_min[sc,p,n,ni,nf,cc] == mTEPES.vP[sc,p,n,ni,nf,cc])
+mTEPES.eCurrentFlow_LinearP1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eCurrentFlow_LinearP1, doc='Linear constraint for current flow relate to P [p.u.]')
+
+print('eCurrentFlow_LinearP1 ... ', len(mTEPES.eCurrentFlow_LinearP1), ' rows')
+
+def eCurrentFlow_LinearP2(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vP_max[sc,p,n,ni,nf,cc] + mTEPES.vP_min[sc,p,n,ni,nf,cc] == sum(mTEPES.vDelta_P[sc,p,n,ni,nf,cc,l] for l in mTEPES.L))
+mTEPES.eCurrentFlow_LinearP2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eCurrentFlow_LinearP2, doc='Linear constraint for current flow relate to P [p.u.]')
+
+print('eCurrentFlow_LinearP2 ... ', len(mTEPES.eCurrentFlow_LinearP2), ' rows')
+
+def eCurrentFlow_LinearQ1(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vQ_max[sc,p,n,ni,nf,cc] - mTEPES.vQ_min[sc,p,n,ni,nf,cc] == mTEPES.vQ[sc,p,n,ni,nf,cc])
+mTEPES.eCurrentFlow_LinearQ1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eCurrentFlow_LinearQ1, doc='Linear constraint for current flow relate to Q [p.u.]')
+
+print('eCurrentFlow_LinearQ1 ... ', len(mTEPES.eCurrentFlow_LinearQ1), ' rows')
+
+def eCurrentFlow_LinearQ2(mTEPES,sc,p,n,ni,nf,cc):
+    return (mTEPES.vQ_max[sc,p,n,ni,nf,cc] + mTEPES.vQ_min[sc,p,n,ni,nf,cc] == sum(mTEPES.vDelta_Q[sc,p,n,ni,nf,cc,l] for l in mTEPES.L))
+mTEPES.eCurrentFlow_LinearQ2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eCurrentFlow_LinearQ2, doc='Linear constraint for current flow relate to Q [p.u.]')
+
+print('eCurrentFlow_LinearQ2 ... ', len(mTEPES.eCurrentFlow_LinearQ2), ' rows')
+
+# def eExisteNetCap(mTEPES,sc,p,n,ni,nf,cc):
+#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
+# mTEPES.eInstalNetCap2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap2, doc='maximum flow by installed network capacity [p.u.]')
+
+# print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
+
+# def eKirchhoff2ndLawExst(mTEPES,sc,p,n,ni,nf,cc):
+#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] == (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase
+# mTEPES.eKirchhoff2ndLawExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eKirchhoff2ndLawExst, doc='flow for each AC existing  line [rad]')
+
+# print('eKirchhoff2ndLawExst  ... ', len(mTEPES.eKirchhoff2ndLawExst), ' rows')
+
+# def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
+#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
+# mTEPES.eKirchhoff2ndLawCnd1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]')
+
+# print('eKirchhoff2ndLawCnd1  ... ', len(mTEPES.eKirchhoff2ndLawCnd1), ' rows')
+
+# def eKirchhoff2ndLawCnd2(mTEPES,sc,p,n,ni,nf,cc):
+#     return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pMaxFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
+# mTEPES.eKirchhoff2ndLawCnd2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]')
+
+# print('eKirchhoff2ndLawCnd2  ... ', len(mTEPES.eKirchhoff2ndLawCnd2), ' rows')
+
+# def eLineLosses1(mTEPES,sc,p,n,ni,nf,cc):
+#     if mTEPES.pIndNetLosses:
+#         return mTEPES.vLineLosses[sc,p,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * mTEPES.vFlow[sc,p,n,ni,nf,cc]
+# mTEPES.eLineLosses1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]')
+
+# print('eLineLosses1          ... ', len(mTEPES.eLineLosses1), ' rows')
+
+# def eLineLosses2(mTEPES,sc,p,n,ni,nf,cc):
+#     if mTEPES.pIndNetLosses:
+#         return mTEPES.vLineLosses[sc,p,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * mTEPES.vFlow[sc,p,n,ni,nf,cc]
+# mTEPES.eLineLosses2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]')
+
+# print('eLineLosses2          ... ', len(mTEPES.eLineLosses2), ' rows')
 
 GeneratingNetConsTime = time.time() - StartTime
 StartTime             = time.time()
