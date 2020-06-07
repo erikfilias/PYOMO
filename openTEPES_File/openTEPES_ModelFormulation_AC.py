@@ -83,7 +83,7 @@ for ni,nf,cc in mTEPES.ll:
 def eBalance_P(mTEPES,sc,p,n,nd):
     return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in mTEPES.g if (nd,g) in mTEPES.n2g) - sum(mTEPES.vESSCharge[sc,p,n,es] for es in mTEPES.es if (nd,es) in mTEPES.n2g) == mTEPES.pDemand[sc,p,n,nd] * (1 - mTEPES.vENS[sc,p,n,nd]) +
         sum(mTEPES.vP[sc,p,n,nd,lout ] + mTEPES.pLineR[nd,lout ] * mTEPES.vCurrentFlow_sqr[sc,p,n,nd,lout ] for lout  in lout[nd]) -
-        sum(mTEPES.vP[sc,p,n,ni,nd,cc] for ni,cc in linl [nd]) + mTEPES.vVoltageMag_sqr[sc,p,n,nd] * mTEPES.pBusGshb[nd])
+        sum(mTEPES.vP[sc,p,n,ni,nd,cc] for ni,cc in lin [nd]) + mTEPES.vVoltageMag_sqr[sc,p,n,nd] * mTEPES.pBusGshb[nd])
 mTEPES.eBalance_P = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, rule=eBalance_P, doc='Active power generation balance [GW]')
         # sum(mTEPES.vFlow      [sc,p,n,nd,nf,cc] for nf,cc in mTEPES.nf*mTEPES.cc if (nd,nf,cc) in mTEPES.la ) -
         # sum(mTEPES.vFlow      [sc,p,n,ni,nd,cc] for ni,cc in mTEPES.ni*mTEPES.cc if (nd,ni,cc) in mTEPES.lin) +

@@ -89,14 +89,14 @@ from   pyomo.environ import ConcreteModel
 
 builtins.StartTime = time.time()
 
-builtins.CaseName = '9n'                               # To select the case
+builtins.CaseName = 'RTS96'                               # To select the case
 
 #%% model declaration
 builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.6.32 - May 26, 2020')
 
 import openTEPES_InputData_AC
 
-import openTEPES_ModelFormulation_AC
+# import openTEPES_ModelFormulation_AC
 
 # candidate discovery
 pIndCandidateDiscovery = 0
@@ -124,36 +124,36 @@ if pIndLosslessSolving == 1 and mTEPES.pIndNetLosses == 1:
     import openTEPES_LosslessSolve
 
 # solve the problem in memory (persistent) or writing the lp file
-pIndMemorySolving = 0
-if pIndMemorySolving == 0:
-    import openTEPES_ProblemSolving
-else:
-    import openTEPES_MemorySolving
+# pIndMemorySolving = 0
+# if pIndMemorySolving == 0:
+#     import openTEPES_ProblemSolving
+# else:
+#     import openTEPES_MemorySolving
 
-# # stage solving with expansion decisions fixed
-# pIndStageSolving        = 0
-# pIndSequentialSolving   = 0
-# builtins.pStageDuration = 168        # duration of the stage (weekly or monthly is what makes sense from an system operation point of view
-# if pIndStageSolving == 1:
-#     if pIndSequentialSolving == 1:
-#         import openTEPES_SequentialStageSolve
-#     else:
-#         # run these commands in a python terminal, each one individually, to set up the pyro solver server
-#         # os.fork('pyomo_ns')
-#         # os.fork('dispatch_srvr')
-#         # run this command as many times as the number of cores to allow parallel solves
-#         # os.fork('pyro_mip_server')
-#         import openTEPES_ParallelStageSolve
-#         # pid = os.getpid()
-#         # os.kill(pid)
-#
-# pIndOutputResults = 0
-# if pIndOutputResults == 1:
-#     import openTEPES_OutputResults
-#
-# pIndVisualization = 0
-# if pIndVisualization == 1:
-#     import openTEPES_Visualization
-#
-# TotalTime = time.time() - StartTime
-# print('Total time                            ... ', round(TotalTime), 's')
+# stage solving with expansion decisions fixed
+pIndStageSolving        = 0
+pIndSequentialSolving   = 0
+builtins.pStageDuration = 168        # duration of the stage (weekly or monthly is what makes sense from an system operation point of view
+if pIndStageSolving == 1:
+    if pIndSequentialSolving == 1:
+        import openTEPES_SequentialStageSolve
+    else:
+        # run these commands in a python terminal, each one individually, to set up the pyro solver server
+        # os.fork('pyomo_ns')
+        # os.fork('dispatch_srvr')
+        # run this command as many times as the number of cores to allow parallel solves
+        # os.fork('pyro_mip_server')
+        import openTEPES_ParallelStageSolve
+        # pid = os.getpid()
+        # os.kill(pid)
+
+pIndOutputResults = 0
+if pIndOutputResults == 1:
+    import openTEPES_OutputResults_AC
+
+pIndVisualization = 0
+if pIndVisualization == 1:
+    import openTEPES_Visualization
+
+TotalTime = time.time() - StartTime
+print('Total time                            ... ', round(TotalTime), 's')

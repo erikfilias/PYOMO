@@ -286,7 +286,7 @@ mTEPES.pENSCost             = Param(initialize=pENSCost        , within=NonNegat
 mTEPES.pCO2Cost             = Param(initialize=pCO2Cost        , within=NonNegativeReals)
 mTEPES.pSBase               = Param(initialize=pSBase          , within=NonNegativeReals)
 
-print(pDemand)
+# print(pDemand)
 # print(pDuration)
 # mTEPES.n.pprint()
 # pDemand = pDemand.iloc[[pDemand.index            [range(1,len(mTEPES.n))]]] 
@@ -358,7 +358,7 @@ mTEPES.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, wit
 mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es:(mTEPES.pESSMinStorage[sc,p,n,es],mTEPES.pESSMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [TWh]')
 mTEPES.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                     doc='ESS spillage                                    [TWh]')
 mTEPES.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es:(0,mTEPES.pMaxCharge       [es]       ),                             doc='ESS charge power                                 [GW]')
-mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd:(0,mTEPES.pDemand          [sc,p,n,nd]),                             doc='energy not served in node                        [GW]')
+mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd:(0,1),                             doc='energy not served in node                        [GW]')
 
 if mTEPES.pIndBinGenOperat == 0:
     mTEPES.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr:(0,1),                                                               doc='commitment of the unit                          [0,1]')
@@ -518,8 +518,38 @@ mTEPES.vVoltageMag_sqr         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, w
 mTEPES.vCurrentFlow_sqr        = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=NonNegativeReals,    bounds=lambda mTEPES,sc,p,n,*la:(0,(pLineNTC[la]**2/pVmax)),         doc='Current flow                                           [A]')
 mTEPES.vP                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Active Power Flow through lines                                 [GW]')
 mTEPES.vQ                      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=RealSet,             doc='Reactive Power Flow through lines                               [GW]')
-mTEPES.vReactiveTotalOutput    = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=RealSet,             doc='Total output of reactive power generators                     [GVAr]')
+mTEPES.vReactiveTotalOutput    = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=RealSet,             bounds=lambda mTEPES,sc,p,n,g :(-mTEPES.pMaxPower        [sc,p,n,g ],mTEPES.pMaxPower        [sc,p,n,g ]), doc='Total output of reactive power generators                     [GVAr]')
 
 SettingUpDataTime = time.time() - StartTime
 StartTime         = time.time()
 print('Setting up input data                 ... ', round(SettingUpDataTime), 's')
+
+import numpy as np
+pLineZ = pLineR + pLineX*1j
+pLineY = 1/pLineZ
+Yb     = np.zeros((len(mTEPES.nd), len(mTEPES.nd)), dtype=complex)
+
+dfPosition = pd.DataFrame(columns=['Position'], index = mTEPES.nd)
+Count = 0
+for i in mTEPES.nd:
+    dfPosition['Position'][i] = Count
+    Count += 1
+
+mTEPES.dfPosition = dfPosition
+print(Yb)
+for ni,nf,cc in mTEPES.la:
+    Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]
+    Yb[dfPosition['Position'][nf], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]]
+
+for k in mTEPES.nd:
+    for ni,nf,cc in mTEPES.la:
+        if ni == k:
+            Yb[dfPosition['Position'][ni], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni],dfPosition['Position'][ni]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]**2 + pLineBsh[ni,nf,cc]*1j
+        elif nf == k:
+            Yb[dfPosition['Position'][ni], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni],dfPosition['Position'][ni]] + pLineY[ni,nf,cc]                       + pLineBsh[ni, nf, cc] * 1j
+
+for k in mTEPES.nd:
+    Yb[dfPosition['Position'][k], dfPosition['Position'][k]] = Yb[dfPosition['Position'][k], dfPosition['Position'][k]] + mTEPES.pBusBshb[k] * 1j
+
+mTEPES.Yb = Yb
+print(Yb)
