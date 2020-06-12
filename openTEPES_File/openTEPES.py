@@ -89,14 +89,14 @@ from   pyomo.environ import ConcreteModel
 
 builtins.StartTime = time.time()
 
-builtins.CaseName = 'RTS96'                               # To select the case
+builtins.CaseName = 'RTS24'                               # To select the case
 
 #%% model declaration
 builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.6.32 - May 26, 2020')
 
 import openTEPES_InputData_AC
 
-# import openTEPES_ModelFormulation_AC
+import openTEPES_ModelFormulation_AC
 
 # candidate discovery
 pIndCandidateDiscovery = 0
@@ -124,11 +124,11 @@ if pIndLosslessSolving == 1 and mTEPES.pIndNetLosses == 1:
     import openTEPES_LosslessSolve
 
 # solve the problem in memory (persistent) or writing the lp file
-# pIndMemorySolving = 0
-# if pIndMemorySolving == 0:
-#     import openTEPES_ProblemSolving
-# else:
-#     import openTEPES_MemorySolving
+pIndMemorySolving = 0
+if pIndMemorySolving == 0:
+    import openTEPES_ProblemSolving
+else:
+    import openTEPES_MemorySolving
 
 # stage solving with expansion decisions fixed
 pIndStageSolving        = 0
@@ -147,7 +147,7 @@ if pIndStageSolving == 1:
         # pid = os.getpid()
         # os.kill(pid)
 
-pIndOutputResults = 0
+pIndOutputResults = 1
 if pIndOutputResults == 1:
     import openTEPES_OutputResults_AC
 

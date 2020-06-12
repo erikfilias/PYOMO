@@ -153,7 +153,10 @@ pNodeLon              = dfNodeLocation['Longitude'        ]                     
 pLineType              = dfNetwork   ['LineType'          ]                                                                          # line type
 pLineVoltage           = dfNetwork   ['Voltage'           ]                                                                          # line voltage                        [kV]
 pLineLossFactor        = dfNetwork   ['LossFactor'        ]                                                                          # loss factor                         [p.u.]
+pLineR                 = dfNetwork   ['Resistance'        ]                                                                          # resistance                           [p.u.]
 pLineX                 = dfNetwork   ['Reactance'         ]                                                                          # reactance                           [p.u.]
+pLineBsh               = dfNetwork   ['Susceptance'       ]                                                                          # Susceptance                           [p.u.]
+pLineTAP               = dfNetwork   ['TAP'               ]                                                                          # TAP changer                           [p.u.]
 pLineNTC               = dfNetwork   ['TTC'               ] * 1e-3 * dfNetwork['SecurityFactor' ]                                    # net transfer capacity               [GW]
 pNetFixedCost          = dfNetwork   ['FixedCost'         ] *        dfNetwork['FixedChargeRate']                                    # network    fixed cost               [MEUR]
 pIndBinLineInvest      = dfNetwork   ['BinaryInvestment'  ]                                                                          # binary line    investment decision  [Yes]
@@ -463,7 +466,7 @@ pLineFi                        = pLineX * 0
 
 
 
-pLineR                         = pLineX * 0 + 0.01
+# pLineR                         = pLineX * 0 + 0.01
 pLineSmax                      = pLineNTC * 1.5
 
 pLineZ2                        = pLineR**2 + pLineX**2
@@ -553,3 +556,29 @@ for k in mTEPES.nd:
 
 mTEPES.Yb = Yb
 print(Yb)
+
+import numpy as np
+Ybarra                      = np.abs(mTEPES.Yb)/np.abs(mTEPES.Yb)
+Ybarra[np.isnan(Ybarra)]    = 0
+
+from cvxopt import spmatrix, amd
+from scipy.sparse import csr_matrix, find
+Ybarra                      = csr_matrix(Ybarra.real)
+#find(Ybarra)
+coo = Ybarra.tocoo()
+SP = spmatrix(coo.data, coo.row.tolist(), coo.col.tolist())
+isinstance(SP,spmatrix)
+
+from cvxopt import spmatrix, amd
+reordening = amd.order(SP)
+# print(reordening)
+Yorden                      = np.zeros((len(mTEPES.nd), len(mTEPES.nd)), dtype=complex)
+for ni in mTEPES.nd:
+    for nf in mTEPES.nd:
+        Yorden[mTEPES.dfPosition['Position'][ni], mTEPES.dfPosition['Position'][nf]] = mTEPES.Yb[reordening[mTEPES.dfPosition['Position'][ni]],reordening[mTEPES.dfPosition['Position'][nf]]]
+
+print(Yorden)
+
+# from cvxopt import spmatrix, amd, normal
+# from chompack import symbolic, cspmatrix, cholesky
+# pattern=cholesky(abs(Yorden.imag))
