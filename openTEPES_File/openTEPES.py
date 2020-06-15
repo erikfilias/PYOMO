@@ -96,7 +96,7 @@ builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and 
 
 import openTEPES_InputData_AC
 
-import openTEPES_ModelFormulation_AC
+# import openTEPES_ModelFormulation_AC
 
 # candidate discovery
 pIndCandidateDiscovery = 0
@@ -123,12 +123,12 @@ pIndLosslessSolving = 0
 if pIndLosslessSolving == 1 and mTEPES.pIndNetLosses == 1:
     import openTEPES_LosslessSolve
 
-# solve the problem in memory (persistent) or writing the lp file
-pIndMemorySolving = 0
-if pIndMemorySolving == 0:
-    import openTEPES_ProblemSolving
-else:
-    import openTEPES_MemorySolving
+# # solve the problem in memory (persistent) or writing the lp file
+# pIndMemorySolving = 0
+# if pIndMemorySolving == 0:
+#     import openTEPES_ProblemSolving
+# else:
+#     import openTEPES_MemorySolving
 
 # stage solving with expansion decisions fixed
 pIndStageSolving        = 0
@@ -147,7 +147,7 @@ if pIndStageSolving == 1:
         # pid = os.getpid()
         # os.kill(pid)
 
-pIndOutputResults = 1
+pIndOutputResults = 0
 if pIndOutputResults == 1:
     import openTEPES_OutputResults_AC
 

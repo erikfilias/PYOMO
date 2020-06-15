@@ -460,6 +460,21 @@ pInductivePF                   = 0.99                #Inductive Power Factor
 pBusGshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(gshb=0)
 pBusBshb                       = dfNodeLocation.drop(['Latitude','Longitude'], axis=1).assign(bshb=0)
 
+pBusBshb['N_106']              = 0.2
+pBusBshb['N_108']              = 0.2
+pBusBshb['N_109']              = 0.2
+pBusBshb['N_110']              = 0.2
+pBusBshb['N_114']              = 0.2
+pBusBshb['N_206']              = 0.2
+pBusBshb['N_208']              = 0.2
+pBusBshb['N_209']              = 0.2
+pBusBshb['N_210']              = 0.2
+pBusBshb['N_214']              = 0.2
+pBusBshb['N_306']              = 0.2
+pBusBshb['N_308']              = 0.2
+pBusBshb['N_310']              = 0.2
+pBusBshb['N_314']              = 0.2
+
 pLineBsh                       = pLineX * 0
 pLineTAP                       = pLineX * 0 + 1
 pLineFi                        = pLineX * 0
@@ -539,7 +554,7 @@ for i in mTEPES.nd:
     Count += 1
 
 mTEPES.dfPosition = dfPosition
-print(Yb)
+# print(Yb)
 for ni,nf,cc in mTEPES.la:
     Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]
     Yb[dfPosition['Position'][nf], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]]
@@ -555,7 +570,7 @@ for k in mTEPES.nd:
     Yb[dfPosition['Position'][k], dfPosition['Position'][k]] = Yb[dfPosition['Position'][k], dfPosition['Position'][k]] + mTEPES.pBusBshb[k] * 1j
 
 mTEPES.Yb = Yb
-print(Yb)
+# print(Yb)
 
 import numpy as np
 Ybarra                      = np.abs(mTEPES.Yb)/np.abs(mTEPES.Yb)
@@ -577,7 +592,9 @@ for ni in mTEPES.nd:
     for nf in mTEPES.nd:
         Yorden[mTEPES.dfPosition['Position'][ni], mTEPES.dfPosition['Position'][nf]] = mTEPES.Yb[reordening[mTEPES.dfPosition['Position'][ni]],reordening[mTEPES.dfPosition['Position'][nf]]]
 
-print(Yorden)
+# print(Yorden)
+
+mTEPES.Yorden = Yorden
 
 # from cvxopt import spmatrix, amd, normal
 # from chompack import symbolic, cspmatrix, cholesky
