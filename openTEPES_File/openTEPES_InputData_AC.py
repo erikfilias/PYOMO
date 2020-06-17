@@ -465,18 +465,18 @@ pBusBshb['N_108']              = 0.2
 pBusBshb['N_109']              = 0.2
 pBusBshb['N_110']              = 0.2
 pBusBshb['N_114']              = 0.2
-pBusBshb['N_206']              = 0.2
-pBusBshb['N_208']              = 0.2
-pBusBshb['N_209']              = 0.2
-pBusBshb['N_210']              = 0.2
-pBusBshb['N_214']              = 0.2
-pBusBshb['N_306']              = 0.2
-pBusBshb['N_308']              = 0.2
-pBusBshb['N_310']              = 0.2
-pBusBshb['N_314']              = 0.2
+# pBusBshb['N_206']              = 0.2
+# pBusBshb['N_208']              = 0.2
+# pBusBshb['N_209']              = 0.2
+# pBusBshb['N_210']              = 0.2
+# pBusBshb['N_214']              = 0.2
+# pBusBshb['N_306']              = 0.2
+# pBusBshb['N_308']              = 0.2
+# pBusBshb['N_310']              = 0.2
+# pBusBshb['N_314']              = 0.2
 
-pLineBsh                       = pLineX * 0
-pLineTAP                       = pLineX * 0 + 1
+# pLineBsh                       = pLineX * 0
+# pLineTAP                       = pLineX * 0 + 1
 pLineFi                        = pLineX * 0
 
 
@@ -545,6 +545,9 @@ print('Setting up input data                 ... ', round(SettingUpDataTime), 's
 import numpy as np
 pLineZ = pLineR + pLineX*1j
 pLineY = 1/pLineZ
+mTEPES.pLineZ = pLineZ
+mTEPES.pLineY = pLineY
+
 Yb     = np.zeros((len(mTEPES.nd), len(mTEPES.nd)), dtype=complex)
 
 dfPosition = pd.DataFrame(columns=['Position'], index = mTEPES.nd)
@@ -556,15 +559,15 @@ for i in mTEPES.nd:
 mTEPES.dfPosition = dfPosition
 # print(Yb)
 for ni,nf,cc in mTEPES.la:
-    Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]
+    Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]] - pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]
     Yb[dfPosition['Position'][nf], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni], dfPosition['Position'][nf]]
 
 for k in mTEPES.nd:
     for ni,nf,cc in mTEPES.la:
         if ni == k:
-            Yb[dfPosition['Position'][ni], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni],dfPosition['Position'][ni]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]**2 + pLineBsh[ni,nf,cc]*1j
+            Yb[dfPosition['Position'][k], dfPosition['Position'][k]] = Yb[dfPosition['Position'][k],dfPosition['Position'][k]] + pLineY[ni,nf,cc]*pLineTAP[ni,nf,cc]**2 + pLineBsh[ni,nf,cc]*1j
         elif nf == k:
-            Yb[dfPosition['Position'][ni], dfPosition['Position'][ni]] = Yb[dfPosition['Position'][ni],dfPosition['Position'][ni]] + pLineY[ni,nf,cc]                       + pLineBsh[ni, nf, cc] * 1j
+            Yb[dfPosition['Position'][k], dfPosition['Position'][k]] = Yb[dfPosition['Position'][k],dfPosition['Position'][k]] + pLineY[ni,nf,cc]                       + pLineBsh[ni, nf, cc] * 1j
 
 for k in mTEPES.nd:
     Yb[dfPosition['Position'][k], dfPosition['Position'][k]] = Yb[dfPosition['Position'][k], dfPosition['Position'][k]] + mTEPES.pBusBshb[k] * 1j
@@ -573,7 +576,7 @@ mTEPES.Yb = Yb
 # print(Yb)
 
 import numpy as np
-Ybarra                      = np.abs(mTEPES.Yb)/np.abs(mTEPES.Yb)
+Ybarra                      = np.divide(np.abs(mTEPES.Yb), np.abs(mTEPES.Yb))
 Ybarra[np.isnan(Ybarra)]    = 0
 
 from cvxopt import spmatrix, amd
@@ -586,6 +589,7 @@ isinstance(SP,spmatrix)
 
 from cvxopt import spmatrix, amd
 reordening = amd.order(SP)
+mTEPES.reordening = reordening
 # print(reordening)
 Yorden                      = np.zeros((len(mTEPES.nd), len(mTEPES.nd)), dtype=complex)
 for ni in mTEPES.nd:
