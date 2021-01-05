@@ -1,5 +1,5 @@
 ## General details
-This project aims to be an optimization example using Python using Pyomo package and Gurobi solver.
+This model aims to be an optimization example using Python using Pyomo package and Gurobi solver.
 
 
 ## Model structure
