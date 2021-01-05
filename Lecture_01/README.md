@@ -21,5 +21,5 @@ The model could be found in the file [ModelFormulation](https://github.com/erikf
 * out: output files from the model and excel files with results.
 
 
-## Desarrolladores:
+## Developed by:
 [erikfilias](https://github.com/erikfilias) with the immeasurable help of [Andres Ramos](https://github.com/arght), Grand Master in optimization.
