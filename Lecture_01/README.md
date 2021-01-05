@@ -22,4 +22,4 @@ The model could be found in the file [ModelFormulation](ModelFormulation.py) and
 
 
 ## Desarrolladores:
-[erikfilias](@erikfilias) with the immeasurable help of [Andres Ramos](@arght), Grand Master in optimization.
+[erikfilias](https://github.com/erikfilias) with the immeasurable help of [Andres Ramos](https://github.com/arght), Grand Master in optimization.
