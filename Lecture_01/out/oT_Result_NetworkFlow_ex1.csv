@@ -1,0 +1,4 @@
+InitialNode,n1,n1,n2
+FinalNode,n2,n3,n3
+Circuit,cc1,cc1,cc1
+MW,50,50,0

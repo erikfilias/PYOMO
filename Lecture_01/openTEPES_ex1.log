@@ -1,0 +1,350 @@
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 14:34:23 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 14:40:36 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 15:10:53 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 15:13:02 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0xb3ec2d2e
+Coefficient statistics:
+  Matrix range     [1e-02, 1e+03]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [4e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 5 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 3 rows, 5 columns, 11 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 3.000e+00
+ Factor NZ  : 6.000e+00
+ Factor Ops : 1.400e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.02191420e-01  4.24810706e-02  2.28e-01 1.73e-04  1.66e-02     0s
+   1   1.82220407e-03  2.37937402e-02  5.55e-17 2.78e-17  2.20e-03     0s
+   2   2.22634189e-03  3.71424269e-03  1.39e-17 1.39e-17  1.49e-04     0s
+   3   3.25793831e-03  3.36108316e-03  1.39e-17 7.32e-17  1.03e-05     0s
+   4   3.30961416e-03  3.31025335e-03  6.94e-18 2.66e-18  6.39e-08     0s
+   5   3.31000000e-03  3.31000000e-03  3.47e-17 4.34e-18  8.76e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.31000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 15:14:32 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 15:38:17 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+
+
+Gurobi 9.0.3 (win64) logging started Tue Jan  5 15:53:54 2021
+
+Changed value of parameter LogFile to openTEPES_ex1.log
+   Prev:   Default: 
+Changed value of parameter Method to 2
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter Presolve to 2
+   Prev: -1  Min: -1  Max: 2  Default: -1
+Changed value of parameter Crossover to 0
+   Prev: -1  Min: -1  Max: 5  Default: -1
+Changed value of parameter MIPGap to 0.025
+   Prev: 0.0001  Min: 0.0  Max: inf  Default: 0.0001
+Changed value of parameter Threads to 6
+   Prev: 0  Min: 0  Max: 1024  Default: 0
+Changed value of parameter TimeLimit to 7200.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Changed value of parameter IterationLimit to 7200000.0
+   Prev: inf  Min: 0.0  Max: inf  Default: inf
+Gurobi Optimizer version 9.0.3 build v9.0.3rc0 (win64)
+Optimize a model with 8 rows, 11 columns and 23 nonzeros
+Model fingerprint: 0x222a8c6d
+Coefficient statistics:
+  Matrix range     [1e-02, 5e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-02, 2e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 3 rows and 3 columns
+Presolve time: 0.00s
+Presolved: 5 rows, 8 columns, 18 nonzeros
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 9.000e+00
+ Factor NZ  : 1.500e+01
+ Factor Ops : 5.500e+01 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01622362e-01  1.10420194e-01  1.25e-01 2.13e-04  1.90e-02     0s
+   1   1.85751995e-03  3.87400136e-02  2.78e-17 2.78e-17  2.46e-03     0s
+   2   2.34105736e-03  4.83591761e-03  2.78e-17 1.04e-17  1.66e-04     0s
+   3   3.50699883e-03  3.62383184e-03  5.55e-17 5.20e-18  7.79e-06     0s
+   4   3.54992702e-03  3.55040396e-03  5.55e-17 6.94e-18  3.18e-08     0s
+   5   3.55000000e-03  3.55000000e-03  3.05e-16 6.94e-18  3.37e-14     0s
+
+Barrier solved model in 5 iterations and 0.00 seconds
+Optimal objective 3.55000000e-03
+

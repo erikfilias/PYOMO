@@ -1,0 +1,4 @@
+,,,Susceptance,TTC,TTCBck,SecurityFactor
+n1,n2,cc1,500,100,,1
+n1,n3,cc1,500,100,,1
+n2,n3,cc1,500,100,,1
