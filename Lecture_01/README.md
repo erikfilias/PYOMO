@@ -3,7 +3,7 @@ This project aims to be an optimization example using Python using Pyomo package
 
 
 ## Model structure
-The model could be found in the file [ModelFormulation](ModelFormulation.py) and it is organized as follows:
+The model could be found in the file [ModelFormulation](https://github.com/erikfilias/PYOMO/blob/master/Lecture_01/modu/B_ModelFormulation.py) and it is organized as follows:
 * Reading Input Data
 * Definition of the Concrete Model.
 * Definition of Sets.
